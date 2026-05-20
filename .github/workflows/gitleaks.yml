@@ -19,7 +19,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Full history so the scan can diff PR commits against base.
           fetch-depth: 0
