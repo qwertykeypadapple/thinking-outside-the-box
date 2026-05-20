@@ -1,15 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <!--
-    Brand favicon — visual pun on the project name "Thinking Outside the Box".
-    Purple rounded square (matches CSS --accent: #5b21b6 + the OG image).
-    White box outline sits in the lower-left; a single white dot escapes
-    diagonally to the upper-right — literally thinking outside the box.
+    Brand favicon — visual of "find your people" (the tagline).
+    Two overlapping circles: each one is a person/mind. The intersection
+    is where they meet — which is the entire product. fill-opacity 0.55
+    on both makes the overlap region noticeably brighter via additive
+    transparency, drawing the eye to the "meeting" exactly like the
+    matching sidebar does in the app.
 
-    Reads at every common favicon size (16, 32, 48, 192). Element proportions
-    chosen so the box outline + dot both remain visible at 16px.
+    Purple background matches CSS --accent (#5b21b6) and the OG image.
+    Geometry chosen so the two circles + their intersection all remain
+    visually distinct at 16x16 pixel rendering.
   -->
   <rect width="64" height="64" rx="14" fill="#5b21b6"/>
-  <rect x="12" y="22" width="34" height="34" rx="6"
-        stroke="#fafaf7" stroke-width="5" stroke-linejoin="round"/>
-  <circle cx="52" cy="14" r="8" fill="#fafaf7"/>
+  <circle cx="22" cy="32" r="18" fill="#fafaf7" fill-opacity="0.55"/>
+  <circle cx="42" cy="32" r="18" fill="#fafaf7" fill-opacity="0.55"/>
 </svg>
