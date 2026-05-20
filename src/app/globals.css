@@ -53,13 +53,18 @@ body {
 /* Soft animated gradient blobs anchored to each corner of the viewport, sitting
    behind all content. All four corners are purple — different shades, from
    deep violet through lavender — and the hue gently breathes ±15° so it
-   stays in the purple family instead of cycling through the full spectrum. */
+   stays in the purple family instead of cycling through the full spectrum.
+   transform: translateZ(0) promotes the layer to its own compositing surface
+   so the animated filter doesn't repaint the page content on each frame
+   (matters most on iOS Safari, where filter on a full-viewport element is
+   expensive). */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  transform: translateZ(0);
   background-image:
     /* top-left: deep purple (the brand accent) */
     radial-gradient(60vmax 50vmax at 0% 0%, rgba(91, 33, 182, 0.22), transparent 60%),
@@ -71,6 +76,32 @@ body::before {
     radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.40), transparent 60%);
   animation: corner-hue 30s ease-in-out infinite alternate;
   will-change: filter;
+}
+
+/* Phone-sized screens. Each blob covered ~60% of a 1440px desktop but
+   ~60% of a 390px iPhone is the entire content area, so the corners
+   bled into the text. Tighten the radii and ease the alpha, and slow
+   the hue-rotate so mobile Safari isn't repainting a full-viewport
+   filter every few seconds. */
+@media (max-width: 640px) {
+  body::before {
+    background-image:
+      radial-gradient(70vw 55vw at 0% 0%, rgba(91, 33, 182, 0.20), transparent 65%),
+      radial-gradient(65vw 50vw at 100% 0%, rgba(124, 58, 237, 0.24), transparent 65%),
+      radial-gradient(70vw 60vw at 100% 100%, rgba(167, 139, 250, 0.28), transparent 65%),
+      radial-gradient(65vw 55vw at 0% 100%, rgba(196, 181, 253, 0.34), transparent 65%);
+    animation-duration: 60s;
+  }
+}
+
+@media (max-width: 640px) and (prefers-color-scheme: dark) {
+  body::before {
+    background-image:
+      radial-gradient(70vw 55vw at 0% 0%, rgba(124, 58, 237, 0.30), transparent 65%),
+      radial-gradient(65vw 50vw at 100% 0%, rgba(139, 92, 246, 0.26), transparent 65%),
+      radial-gradient(70vw 60vw at 100% 100%, rgba(167, 139, 250, 0.28), transparent 65%),
+      radial-gradient(65vw 55vw at 0% 100%, rgba(196, 181, 253, 0.22), transparent 65%);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
