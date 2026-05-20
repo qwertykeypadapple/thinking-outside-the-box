@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./public/logo.png" alt="Thinking Outside the Box logo" width="200" />
+</p>
+
 # Thinking Outside the Box
 
 > **Think in public. Find your people.**

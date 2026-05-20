@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { requireIdentity } from "@/lib/identity/require-identity";
 import {
   listChats,
@@ -96,11 +97,25 @@ async function fetchTabChats(
 function Header({ handle, lastChatId }: { handle: string; lastChatId: string | null }) {
   return (
     <header className="mb-6 flex flex-col gap-3 border-b border-[var(--border)] pb-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="truncate text-2xl font-semibold tracking-tight">
-          Thinking Outside the Box
-        </h1>
-        <p className="text-sm text-[var(--muted)]">Think in public. Find your people.</p>
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Logo as a brand mark next to the wordmark. priority because it's
+            above-the-fold on every visit. width=72 keeps the file lightweight
+            but readable; the alt text intentionally leaves the brand name to
+            the h1 below it to avoid double-announcement for screen readers. */}
+        <Image
+          src="/logo.png"
+          alt=""
+          width={72}
+          height={72}
+          priority
+          className="shrink-0"
+        />
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-semibold tracking-tight">
+            Thinking Outside the Box
+          </h1>
+          <p className="text-sm text-[var(--muted)]">Think in public. Find your people.</p>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {lastChatId && (

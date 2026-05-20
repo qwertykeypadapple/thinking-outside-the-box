@@ -26,6 +26,7 @@ import { createAutoReport } from "@/lib/reports/store";
 import { recordEvent } from "@/lib/analytics/store";
 import { isHumanVerified } from "@/lib/identity/human-cookie";
 import { getHardLimitUsd, isOverHardLimit, recordUsage } from "@/lib/llm/usage";
+import * as Sentry from "@sentry/nextjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
