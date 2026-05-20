@@ -56,6 +56,30 @@ export async function touchLastSeen(handle: string): Promise<void> {
   if (error) throw new Error(`touchLastSeen: ${error.message}`);
 }
 
+// Self-service data erasure. Delegates the cascading deletes to the
+// delete_user_data() Postgres function (migration 0017) so everything
+// happens in one transaction — no chance of partial state if the request
+// dies mid-flight.
+//
+// scorched=false (default, "ghost-user"): erase profile, owned chats,
+// follows, reports filed, events, and the user row. Messages the user
+// typed in OTHER people's chats stay but get sender_handle = NULL via
+// FK cascade. Preserves chat coherence for other owners.
+//
+// scorched=true: also delete those messages. Not exposed in UI yet; the
+// flag is here so the future "delete my messages everywhere" checkbox is
+// a one-line passthrough.
+export async function deleteUserData(
+  handle: string,
+  scorched: boolean = false,
+): Promise<void> {
+  const { error } = await getSupabaseAdmin().rpc("delete_user_data", {
+    p_handle: handle,
+    p_scorched: scorched,
+  });
+  if (error) throw new Error(`deleteUserData: ${error.message}`);
+}
+
 // Atomic handle rename. Delegates the multi-table update to the
 // rename_handle() Postgres function (migration 0015) so users.handle,
 // chats.owner_handle, messages.sender_handle, follows.{follower,followee}_handle,

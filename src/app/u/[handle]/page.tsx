@@ -10,6 +10,7 @@ import {
 import type { PublicChatPreview } from "@/lib/chat/store";
 import { EditBio } from "./edit-bio";
 import { RenameHandle } from "./rename-handle";
+import { DeleteMe } from "./delete-me";
 import { FollowButton } from "@/components/follow-button";
 import { recordEvent } from "@/lib/analytics/store";
 
@@ -140,6 +141,18 @@ export default async function ProfilePage({
           </ul>
         )}
       </section>
+
+      {/* Danger zone — self-service erasure. Lives at the very bottom of the
+          profile, separated by extra whitespace + a divider, so the destructive
+          control is hard to reach by accident. */}
+      {isSelf && (
+        <section className="mt-12 border-t border-[var(--border)] pt-6">
+          <h2 className="mb-2 text-xs uppercase tracking-wider text-red-600 dark:text-red-400">
+            Danger zone
+          </h2>
+          <DeleteMe currentHandle={handle} />
+        </section>
+      )}
     </div>
   );
 }

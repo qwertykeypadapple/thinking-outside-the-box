@@ -17,11 +17,13 @@ import {
   type Visibility,
 } from "@/lib/chat/store";
 import {
+  deleteUserData,
   isValidCustomHandle,
   renameHandle,
   updateBio,
   upsertUser,
 } from "@/lib/users/store";
+import { HUMAN_COOKIE_NAME } from "@/lib/identity/human-cookie";
 import {
   followHandle,
   followTag,
@@ -62,6 +64,33 @@ export async function setChatVisibility(chatId: string, visibility: Visibility) 
   }
   revalidatePath(`/c/${chatId}`);
   revalidatePath("/feed");
+}
+
+// Self-service data erasure. Type-to-confirm flow in the UI passes the
+// caller's own handle as a sanity check — we still re-derive the handle
+// from the cookie here, so the input is just an "I'm sure" gesture, not
+// the actual authority. Clears both identity cookies and redirects to a
+// "your data is gone" landing.
+export async function deleteMyDataAction(typedHandle: string): Promise<void> {
+  const { handle } = await getOrCreateIdentity();
+  if (typedHandle.trim() !== handle) {
+    throw new Error("Typed handle doesn't match. Try again.");
+  }
+
+  // Ghost-user policy (PLAN §8.4 + design discussion in the codebase):
+  // messages in others' chats stay with sender_handle = NULL via FK cascade.
+  // Scorched-earth is plumbed through the Postgres function but not yet
+  // exposed in UI — toggle to true when the checkbox lands.
+  await deleteUserData(handle, /* scorched */ false);
+
+  // Clear both cookies so the user is fully signed out. Setting maxAge: 0
+  // is the canonical way to expire a cookie — the browser drops it on the
+  // next request.
+  const jar = await cookies();
+  jar.set(COOKIE_NAME, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 0, path: "/" });
+  jar.set(HUMAN_COOKIE_NAME, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 0, path: "/" });
+
+  redirect("/deleted");
 }
 
 // One-time custom handle rename (PLAN §2.1).
