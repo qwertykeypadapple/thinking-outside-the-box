@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { isHumanVerified } from "@/lib/identity/human-cookie";
+import { isTurnstileEnabled } from "@/lib/turnstile/verify";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,17 +29,27 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Mount the Turnstile widget only when needed: the visitor doesn't yet
+  // hold a fresh totb_human cookie, and Turnstile is enabled by env. This
+  // avoids loading the Cloudflare script on every page once verified, and
+  // skips it entirely in dev/CI when the secret key isn't set.
+  const showTurnstile = isTurnstileEnabled() && !(await isHumanVerified());
+  const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        {showTurnstile && <TurnstileWidget sitekey={sitekey} />}
+      </body>
     </html>
   );
 }

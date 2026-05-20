@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getOrCreateIdentity } from "@/lib/identity/cookie";
+import { cookies } from "next/headers";
+import {
+  COOKIE_NAME,
+  COOKIE_MAX_AGE,
+  encodeIdentity,
+  getOrCreateIdentity,
+} from "@/lib/identity/cookie";
 import {
   createChat,
   deleteChat,
@@ -10,7 +16,12 @@ import {
   updateChatVisibility,
   type Visibility,
 } from "@/lib/chat/store";
-import { updateBio, upsertUser } from "@/lib/users/store";
+import {
+  isValidCustomHandle,
+  renameHandle,
+  updateBio,
+  upsertUser,
+} from "@/lib/users/store";
 import {
   followHandle,
   followTag,
@@ -51,6 +62,41 @@ export async function setChatVisibility(chatId: string, visibility: Visibility) 
   }
   revalidatePath(`/c/${chatId}`);
   revalidatePath("/feed");
+}
+
+// One-time custom handle rename (PLAN §2.1).
+// Validates shape + that the caller owns the source handle, delegates the
+// multi-table rewrite to the rename_handle() Postgres function, then re-signs
+// the identity cookie under the new handle and redirects to the new profile.
+export async function renameHandleAction(newHandleRaw: string): Promise<void> {
+  const { handle: current } = await getOrCreateIdentity();
+  const newHandle = newHandleRaw.trim().toLowerCase();
+  if (!isValidCustomHandle(newHandle)) {
+    throw new Error("Handle must start with a letter and be 3–31 chars: a–z, 0–9, dash.");
+  }
+  if (newHandle === current) {
+    throw new Error("That's already your handle.");
+  }
+
+  // RPC throws on already-renamed / taken / shape violations — surfaces a
+  // clean message from the store layer.
+  await renameHandle(current, newHandle);
+
+  // Cookie is signed under the OLD handle. Re-sign with the new one so the
+  // user stays logged in as themselves and subsequent requests resolve to
+  // the renamed row. Re-mints last-seen + ID atomically.
+  const jar = await cookies();
+  jar.set(COOKIE_NAME, await encodeIdentity(newHandle), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: COOKIE_MAX_AGE,
+    path: "/",
+  });
+
+  // Old URLs (/u/<old>) are now 404; surfaces show the new handle everywhere.
+  revalidatePath("/", "layout");
+  redirect(`/u/${newHandle}`);
 }
 
 export async function updateBioAction(handle: string, bio: string) {

@@ -119,6 +119,21 @@ export function ChatView({
       });
 
       if (!res.ok || !res.body) {
+        // Turnstile gate: the server is waiting for the human cookie. The
+        // widget mounted in layout already fires after the page loads — if
+        // we hit this, the verification round-trip hadn't completed yet.
+        // Reload picks up the fresh cookie; user re-sends.
+        if (res.status === 403 && res.headers.get("X-Verification-Required") === "turnstile") {
+          setMessages((prev) => {
+            const next = [...prev];
+            next[next.length - 1] = {
+              role: "assistant",
+              content: "[verifying you're human… retry in a second]",
+            };
+            return next;
+          });
+          return;
+        }
         const errText = await res.text().catch(() => res.statusText);
         const prefix = res.status === 429 ? "" : "[error: ";
         const suffix = res.status === 429 ? "" : "]";

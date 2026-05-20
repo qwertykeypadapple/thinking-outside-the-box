@@ -24,6 +24,7 @@ import { checkAndIncrement } from "@/lib/rate-limit/store";
 import { classifyMessage, shouldAutoReport } from "@/lib/llm/moderator";
 import { createAutoReport } from "@/lib/reports/store";
 import { recordEvent } from "@/lib/analytics/store";
+import { isHumanVerified } from "@/lib/identity/human-cookie";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +91,17 @@ async function moderateInBackground(
 
 export async function POST(req: NextRequest) {
   const { handle } = await getOrCreateIdentity();
+
+  // Bot gate: refuse the LLM call if the visitor hasn't passed Turnstile
+  // recently. isHumanVerified() soft-bypasses when TURNSTILE_SECRET_KEY is
+  // unset (dev/CI). Client receives 403 with a structured reason so the chat
+  // UI can prompt re-verification.
+  if (!(await isHumanVerified())) {
+    return new Response("complete verification", {
+      status: 403,
+      headers: { "X-Verification-Required": "turnstile" },
+    });
+  }
 
   // Rate limit BEFORE any LLM call — these limits double as cost ceilings
   // (PLAN.md §7.2). Failure to look up the user falls back to "fresh" limits.

@@ -8,7 +8,17 @@ export type UserRecord = {
   avatar_url: string | null;
   created_at: string;
   last_seen_at: string;
+  // Null until the user picks a custom handle. Used to gate the one-time
+  // rename UI on the profile page.
+  renamed_at: string | null;
 };
+
+// Handle shape: lowercase letter, then up to 30 lowercase-alnum/dash chars.
+// Mirrors users_handle_shape in migration 0005 + rename_handle() guard.
+export const HANDLE_RE = /^[a-z][a-z0-9-]{2,30}$/;
+export function isValidCustomHandle(h: string): boolean {
+  return HANDLE_RE.test(h);
+}
 
 export async function getUser(handle: string): Promise<UserRecord | null> {
   const { data, error } = await getSupabaseAdmin()
@@ -44,6 +54,32 @@ export async function touchLastSeen(handle: string): Promise<void> {
     .update({ last_seen_at: new Date().toISOString() })
     .eq("handle", handle);
   if (error) throw new Error(`touchLastSeen: ${error.message}`);
+}
+
+// Atomic handle rename. Delegates the multi-table update to the
+// rename_handle() Postgres function (migration 0015) so users.handle,
+// chats.owner_handle, messages.sender_handle, follows.{follower,followee}_handle,
+// topic_follows.handle, reports.reporter_handle, and events.handle all move
+// in a single transaction. The function also enforces shape, uniqueness, and
+// the one-time-only rule via raised exceptions.
+export async function renameHandle(
+  oldHandle: string,
+  newHandle: string,
+): Promise<void> {
+  const { error } = await getSupabaseAdmin().rpc("rename_handle", {
+    p_old_handle: oldHandle,
+    p_new_handle: newHandle,
+  });
+  if (error) {
+    // Surface a clean message to the action layer. The Postgres function uses
+    // specific SQLSTATEs we can map; everything else bubbles raw.
+    const code = (error as { code?: string }).code ?? "";
+    if (code === "23505") throw new Error(`handle "${newHandle}" is taken`);
+    if (code === "22023") throw new Error(`invalid handle: ${error.message}`);
+    if (code === "23514") throw new Error("you've already used your one-time rename");
+    if (code === "P0002") throw new Error("source handle not found");
+    throw new Error(`renameHandle: ${error.message}`);
+  }
 }
 
 export type ProfileSummary = {

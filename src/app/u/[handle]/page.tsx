@@ -9,6 +9,7 @@ import {
 } from "@/lib/follows/store";
 import type { PublicChatPreview } from "@/lib/chat/store";
 import { EditBio } from "./edit-bio";
+import { RenameHandle } from "./rename-handle";
 import { FollowButton } from "@/components/follow-button";
 import { recordEvent } from "@/lib/analytics/store";
 
@@ -84,6 +85,15 @@ export default async function ProfilePage({
           </p>
         )}
       </section>
+
+      {/* One-time custom rename. Hidden once users.renamed_at is set so the
+          UI doesn't tease an action that would just throw "already renamed". */}
+      {isSelf && summary.user.renamed_at == null && (
+        <section className="mb-6">
+          <h2 className="mb-2 text-xs uppercase tracking-wider text-[var(--muted)]">Handle</h2>
+          <RenameHandle currentHandle={handle} />
+        </section>
+      )}
 
       <section className="mb-6 grid grid-cols-2 gap-4 text-sm">
         <div>

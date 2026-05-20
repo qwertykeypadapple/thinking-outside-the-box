@@ -12,15 +12,21 @@ const isProd = process.env.NODE_ENV === "production";
 // direct host defensively for any SDK path that bypasses the tunnel.
 const sentryConnectSrc = "https://*.sentry.io https://*.ingest.sentry.io";
 
+// Cloudflare Turnstile loads api.js from this origin and renders the challenge
+// inside an iframe served from the same host. frame-src must allow it, and
+// script-src needs to permit the loader.
+const turnstileHost = "https://challenges.cloudflare.com";
+
 const cspProd = [
   "default-src 'self'",
   // Next + Turbopack require some inline; allow nonce-less inline for now.
   // Tighten with a nonce middleware when you add real third-party scripts.
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' ${turnstileHost}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.voyageai.com https://api.anthropic.com ${sentryConnectSrc}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.voyageai.com https://api.anthropic.com ${sentryConnectSrc} ${turnstileHost}`,
+  `frame-src ${turnstileHost}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -30,11 +36,12 @@ const cspProd = [
 
 const cspDev = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${turnstileHost}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self' ws: http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.voyageai.com https://api.anthropic.com ${sentryConnectSrc}`,
+  `connect-src 'self' ws: http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.voyageai.com https://api.anthropic.com ${sentryConnectSrc} ${turnstileHost}`,
+  `frame-src ${turnstileHost}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
