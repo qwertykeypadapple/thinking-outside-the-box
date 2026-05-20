@@ -12,6 +12,7 @@ import { getIdentity } from "@/lib/identity/cookie";
 import { keywordSearch, semanticSearch, type SearchHit } from "@/lib/search/store";
 import { recordEvent } from "@/lib/analytics/store";
 import { SearchResults } from "@/components/search-results";
+import { ChatCard } from "@/components/chat-card";
 
 export const dynamic = "force-dynamic";
 
@@ -143,7 +144,7 @@ export default async function FeedPage({
         <ul className="space-y-3">
           {browseChats.map((c) => (
             <li key={c.id}>
-              <FeedCard chat={c} />
+              <ChatCard chat={c} />
             </li>
           ))}
         </ul>
@@ -205,63 +206,3 @@ function EmptyState({ tab }: { tab: Tab }) {
   );
 }
 
-function FeedCard({ chat }: { chat: PublicChatPreview }) {
-  const title = chat.first_user_message
-    ? truncate(chat.first_user_message, 160)
-    : "(no opening message)";
-  const reply = chat.last_message && chat.last_message.role === "assistant"
-    ? truncate(chat.last_message.content, 220)
-    : null;
-
-  return (
-    <div className="rounded-lg border border-[var(--border)] transition-colors hover:bg-black/3 dark:hover:bg-white/5">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 pt-3 text-xs text-[var(--muted)]">
-        <Link
-          href={`/u/${chat.owner_handle}`}
-          className="font-mono text-[var(--foreground)] hover:underline"
-        >
-          {chat.owner_handle}
-        </Link>
-        <span>{relativeTime(chat.last_active_at)} · {chat.ai_message_count} AI repl{chat.ai_message_count === 1 ? "y" : "ies"}</span>
-      </div>
-      <Link href={`/c/${chat.id}`} className="block px-4 pb-3 pt-2">
-        {chat.topic_tags.length > 0 && (
-          <div className="mb-2 flex flex-wrap gap-1">
-            {chat.topic_tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full bg-black/5 px-2 py-0.5 font-mono text-[10px] text-[var(--muted)] dark:bg-white/10"
-              >
-                #{t}
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="text-sm text-[var(--foreground)]">{title}</p>
-        {reply && (
-          <p className="mt-2 border-l-2 border-[var(--border)] pl-2 text-sm text-[var(--muted)]">
-            {reply}
-          </p>
-        )}
-      </Link>
-    </div>
-  );
-}
-
-function truncate(s: string, n: number): string {
-  if (s.length <= n) return s;
-  return s.slice(0, n).trimEnd() + "…";
-}
-
-function relativeTime(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diffMs / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d}d ago`;
-  const mo = Math.floor(d / 30);
-  return `${mo}mo ago`;
-}
