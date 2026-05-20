@@ -15,7 +15,7 @@ import { ImageResponse } from "next/og";
 // "block" on multi-child divs will silently break the route. All multi-
 // child divs below declare flex explicitly.
 
-export const alt = "Thinking Outside the Box — Anonymously Think in Public. Find Your People.";
+export const alt = "Thinking Outside the Box — Anonymously Think in Public. See Who Thinks Like You.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -59,7 +59,7 @@ export default function OgImage() {
             letterSpacing: "-0.01em",
           }}
         >
-          Anonymously Think in Public. Find Your People.
+          Anonymously Think in Public. See Who Thinks Like You.
         </div>
         <div
           style={{

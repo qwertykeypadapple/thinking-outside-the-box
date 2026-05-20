@@ -4,7 +4,7 @@
 
 # Thinking Outside the Box
 
-> **Anonymously Think in Public. Find Your People.**
+> **Anonymously Think in Public. See Who Thinks Like You.**
 
 A platform where people chat with AI in public, and the system surfaces other users currently — or recently — exploring similar topics.
 

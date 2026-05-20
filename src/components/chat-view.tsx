@@ -209,7 +209,7 @@ export function ChatView({
         <div className="flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
-            <p className="text-xs text-[var(--muted)]">Anonymously Think in Public. Find Your People.</p>
+            <p className="text-xs text-[var(--muted)]">Anonymously Think in Public. See Who Thinks Like You.</p>
           </div>
           {/* On mobile the handle sits with the title so the action row below
               can be a clean toolbar. On sm+ this collapses into the right
