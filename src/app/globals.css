@@ -78,31 +78,11 @@ body::before {
   will-change: filter;
 }
 
-/* Phone-sized screens. Each blob covered ~60% of a 1440px desktop but
-   ~60% of a 390px iPhone is the entire content area, so the corners
-   bled into the text. Tighten the radii and ease the alpha, and slow
-   the hue-rotate so mobile Safari isn't repainting a full-viewport
-   filter every few seconds. */
-@media (max-width: 640px) {
-  body::before {
-    background-image:
-      radial-gradient(70vw 55vw at 0% 0%, rgba(91, 33, 182, 0.20), transparent 65%),
-      radial-gradient(65vw 50vw at 100% 0%, rgba(124, 58, 237, 0.24), transparent 65%),
-      radial-gradient(70vw 60vw at 100% 100%, rgba(167, 139, 250, 0.28), transparent 65%),
-      radial-gradient(65vw 55vw at 0% 100%, rgba(196, 181, 253, 0.34), transparent 65%);
-    animation-duration: 60s;
-  }
-}
-
-@media (max-width: 640px) and (prefers-color-scheme: dark) {
-  body::before {
-    background-image:
-      radial-gradient(70vw 55vw at 0% 0%, rgba(124, 58, 237, 0.30), transparent 65%),
-      radial-gradient(65vw 50vw at 100% 0%, rgba(139, 92, 246, 0.26), transparent 65%),
-      radial-gradient(70vw 60vw at 100% 100%, rgba(167, 139, 250, 0.28), transparent 65%),
-      radial-gradient(65vw 55vw at 0% 100%, rgba(196, 181, 253, 0.22), transparent 65%);
-  }
-}
+/* IMPORTANT — the four blocks below MUST stay in this source order:
+   1. dark-desktop, 2. light-mobile, 3. dark-mobile. All three have equal
+   specificity, so source order is what makes dark-mobile actually win on
+   a dark-mode phone (otherwise the broader `prefers-color-scheme: dark`
+   rule cascades over it). */
 
 @media (prefers-color-scheme: dark) {
   body::before {
@@ -115,6 +95,34 @@ body::before {
       radial-gradient(60vmax 55vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 60%),
       /* bottom-left: pale lavender */
       radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.26), transparent 60%);
+  }
+}
+
+/* Phone-sized screens. iPhones are tall (~390×844), so a 60vmax×50vmax
+   blob anchored to a corner only reaches ~30% down the screen — leaving
+   the middle dark. Bump to 70vmax×60vmax with a wider 70% falloff so each
+   corner reaches well past the center and the four blobs blend smoothly
+   on a phone. Also slow the animation: animating a fixed full-viewport
+   filter on mobile Safari is GPU-expensive, and a longer cycle materially
+   reduces battery cost. */
+@media (max-width: 640px) {
+  body::before {
+    background-image:
+      radial-gradient(70vmax 60vmax at 0% 0%, rgba(91, 33, 182, 0.22), transparent 70%),
+      radial-gradient(65vmax 55vmax at 100% 0%, rgba(124, 58, 237, 0.26), transparent 70%),
+      radial-gradient(70vmax 65vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 70%),
+      radial-gradient(65vmax 60vmax at 0% 100%, rgba(196, 181, 253, 0.40), transparent 70%);
+    animation-duration: 60s;
+  }
+}
+
+@media (max-width: 640px) and (prefers-color-scheme: dark) {
+  body::before {
+    background-image:
+      radial-gradient(70vmax 60vmax at 0% 0%, rgba(124, 58, 237, 0.34), transparent 70%),
+      radial-gradient(65vmax 55vmax at 100% 0%, rgba(139, 92, 246, 0.30), transparent 70%),
+      radial-gradient(70vmax 65vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 70%),
+      radial-gradient(65vmax 60vmax at 0% 100%, rgba(196, 181, 253, 0.26), transparent 70%);
   }
 }
 
