@@ -114,7 +114,7 @@ function Header({ handle, lastChatId }: { handle: string; lastChatId: string | n
           <h1 className="truncate text-2xl font-semibold tracking-tight">
             Thinking Outside the Box
           </h1>
-          <p className="text-sm text-[var(--muted)]">Think in public. Find your people.</p>
+          <p className="text-sm text-[var(--muted)]">Anonymously Think in Public. Find Your People.</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
