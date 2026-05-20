@@ -8,17 +8,7 @@ export type UserRecord = {
   avatar_url: string | null;
   created_at: string;
   last_seen_at: string;
-  // Null until the user picks a custom handle. Used to gate the one-time
-  // rename UI on the profile page.
-  renamed_at: string | null;
 };
-
-// Handle shape: lowercase letter, then up to 30 lowercase-alnum/dash chars.
-// Mirrors users_handle_shape in migration 0005 + rename_handle() guard.
-export const HANDLE_RE = /^[a-z][a-z0-9-]{2,30}$/;
-export function isValidCustomHandle(h: string): boolean {
-  return HANDLE_RE.test(h);
-}
 
 export async function getUser(handle: string): Promise<UserRecord | null> {
   const { data, error } = await getSupabaseAdmin()
@@ -78,43 +68,6 @@ export async function deleteUserData(
     p_scorched: scorched,
   });
   if (error) throw new Error(`deleteUserData: ${error.message}`);
-}
-
-// Atomic handle rename. Delegates the multi-table update to the
-// rename_handle() Postgres function (migration 0015) so users.handle,
-// chats.owner_handle, messages.sender_handle, follows.{follower,followee}_handle,
-// topic_follows.handle, reports.reporter_handle, and events.handle all move
-// in a single transaction. The function also enforces shape, uniqueness, and
-// the one-time-only rule via raised exceptions.
-export async function renameHandle(
-  oldHandle: string,
-  newHandle: string,
-): Promise<void> {
-  const { error } = await getSupabaseAdmin().rpc("rename_handle", {
-    p_old_handle: oldHandle,
-    p_new_handle: newHandle,
-  });
-  if (error) {
-    // Surface a SHORT, user-readable message — the action layer passes
-    // this straight to the UI's error label. The Postgres function uses
-    // specific SQLSTATEs; we also fall back to a substring check on the
-    // raw message in case Supabase doesn't always propagate the code.
-    const code = (error as { code?: string }).code ?? "";
-    const msg = (error.message ?? "").toLowerCase();
-    if (code === "23505" || msg.includes("already taken") || msg.includes("duplicate key")) {
-      throw new Error("User already exists.");
-    }
-    if (code === "22023" || msg.includes("invalid handle")) {
-      throw new Error("Invalid handle.");
-    }
-    if (code === "23514" || msg.includes("already been renamed")) {
-      throw new Error("You've already used your one-time rename.");
-    }
-    if (code === "P0002") {
-      throw new Error("Account not found.");
-    }
-    throw new Error("Rename failed. Try again.");
-  }
 }
 
 export type ProfileSummary = {
