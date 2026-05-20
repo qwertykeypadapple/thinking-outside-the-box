@@ -25,11 +25,19 @@ import { classifyMessage, shouldAutoReport } from "@/lib/llm/moderator";
 import { createAutoReport } from "@/lib/reports/store";
 import { recordEvent } from "@/lib/analytics/store";
 import { isHumanVerified } from "@/lib/identity/human-cookie";
+import { getHardLimitUsd, isOverHardLimit, recordUsage } from "@/lib/llm/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Body = { chatId?: unknown; message?: unknown };
+
+function secondsUntilUtcMidnight(): number {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setUTCHours(24, 0, 0, 0);
+  return Math.ceil((midnight.getTime() - now.getTime()) / 1000);
+}
 
 // Fire-and-forget tag extraction. Runs after the chat response is streamed.
 // In dev / long-lived server: completes fine. In serverless prod we'll move
@@ -101,6 +109,20 @@ export async function POST(req: NextRequest) {
       status: 403,
       headers: { "X-Verification-Required": "turnstile" },
     });
+  }
+
+  // Spend kill-switch (PLAN.md §7.2). If today's cumulative Anthropic spend
+  // has hit the hard limit, refuse new LLM calls until midnight UTC. Per-
+  // handle rate limits cap individual abuse; this caps aggregate spend
+  // across all users together. Soft-disables when LLM_KILLSWITCH_DISABLED=1
+  // and when the llm_usage table doesn't exist yet (getDailySpendUsd returns
+  // 0 on error).
+  if (await isOverHardLimit()) {
+    const limit = getHardLimitUsd();
+    return new Response(
+      `Service paused: today's spend limit ($${limit}) reached. Donate at /sponsors to help keep this free.`,
+      { status: 429, headers: { "Retry-After": String(secondsUntilUtcMidnight()) } },
+    );
   }
 
   // Rate limit BEFORE any LLM call — these limits double as cost ceilings
@@ -218,11 +240,16 @@ export async function POST(req: NextRequest) {
           const { text: assistantRedacted } = redact(assistant);
           await finalizeAssistantMessage(assistantMessageId, assistantRedacted);
           emit("done", { messageId: assistantMessageId, content: assistantRedacted });
-          // Tag, embed, and moderate the assistant turn in parallel. All three
-          // are best-effort: the user's request is already served by this point.
+          // Tag, embed, moderate, and record spend in parallel. All four are
+          // best-effort: the user's request is already served by this point.
           void tagInBackground(chatId);
           void embedInBackground(chatId);
           void moderateInBackground(chatId, assistantMessageId, assistantRedacted, "assistant");
+          // Token estimate is char-based (~4 chars/token). Close enough for a
+          // $-gate that fires at $15/$25. Inputs = system prompt + full
+          // history; outputs = just the assistant reply.
+          const inputText = [SYSTEM_PROMPT, ...history.map((m) => m.content)].join("\n\n");
+          void recordUsage({ model: provider.model, inputText, outputText: assistantRedacted });
         } else {
           // Empty stream — likely an immediate error or empty model output.
           // Finalize with a marker so the placeholder doesn't stay pending.

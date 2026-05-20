@@ -9,6 +9,11 @@ import {
   topTags,
   type EventRecord,
 } from "@/lib/analytics/store";
+import {
+  getDailySpendUsd,
+  getHardLimitUsd,
+  getSoftLimitUsd,
+} from "@/lib/llm/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +49,7 @@ export default async function InsightsPage() {
     reports7d,
     tags7d,
     recent,
+    spendUsd,
   ] = await Promise.all([
     distinctHandleCount(since["24h"]),
     distinctHandleCount(since["7d"]),
@@ -61,7 +67,11 @@ export default async function InsightsPage() {
     eventCount("report_filed", since["7d"]),
     topTags(since["7d"], 12),
     recentEvents(50),
+    getDailySpendUsd(),
   ]);
+  const softLimit = getSoftLimitUsd();
+  const hardLimit = getHardLimitUsd();
+  const spendPct = hardLimit > 0 ? (spendUsd / hardLimit) * 100 : 0;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
@@ -79,6 +89,52 @@ export default async function InsightsPage() {
           ← Back
         </Link>
       </header>
+
+      <Section title="Today's Anthropic spend">
+        {/* Kill-switch trips at hard limit; soft limit is informational.
+            spendPct shows progress toward hard. Red when ≥ soft. */}
+        <div className="rounded-md border border-[var(--border)] p-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="text-2xl font-semibold font-mono">
+              ${spendUsd.toFixed(2)}
+              <span className="ml-2 text-xs font-normal text-[var(--muted)]">
+                of ${hardLimit.toFixed(0)} hard cap
+              </span>
+            </div>
+            <div className={
+              "text-xs font-mono " +
+              (spendUsd >= hardLimit
+                ? "text-red-600 dark:text-red-400"
+                : spendUsd >= softLimit
+                  ? "text-orange-600 dark:text-orange-400"
+                  : "text-[var(--muted)]")
+            }>
+              {spendPct.toFixed(0)}%
+            </div>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+            <div
+              className={
+                "h-full " +
+                (spendUsd >= hardLimit
+                  ? "bg-red-500"
+                  : spendUsd >= softLimit
+                    ? "bg-orange-500"
+                    : "bg-[var(--accent)]")
+              }
+              style={{ width: `${Math.min(100, spendPct).toFixed(1)}%` }}
+            />
+          </div>
+          <p className="mt-2 text-[10px] text-[var(--muted)]">
+            Soft alert at ${softLimit.toFixed(0)} · hard cutoff at ${hardLimit.toFixed(0)} · resets UTC midnight.
+            {spendUsd >= hardLimit && (
+              <span className="ml-2 font-semibold text-red-600 dark:text-red-400">
+                Service paused — new chats return 429 until reset.
+              </span>
+            )}
+          </p>
+        </div>
+      </Section>
 
       <Section title="Active handles">
         <Grid>
