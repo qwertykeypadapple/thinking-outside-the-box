@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-static";
 
@@ -27,11 +28,14 @@ export default function SponsorsPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight">Sponsors</h1>
-          <p className="text-xs text-[var(--muted)]">
-            Donations keep this platform free, open source, and ad-free.
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandMark size={40} />
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight">Sponsors</h1>
+            <p className="text-xs text-[var(--muted)]">
+              Donations keep this platform free, open source, and ad-free.
+            </p>
+          </div>
         </div>
         <Link
           href="/"

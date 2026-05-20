@@ -12,6 +12,7 @@ import {
   startNewChat,
 } from "@/app/actions";
 import { RealtimeMatchTrigger } from "@/components/realtime-match-trigger";
+import { BrandMark } from "@/components/brand-mark";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -207,13 +208,16 @@ export function ChatView({
       <RealtimeMatchTrigger />
       <header className="mb-4 flex flex-col gap-3 border-b border-[var(--border)] pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
-            <p className="text-xs text-[var(--muted)]">
-              Anonymously Think in Public.
-              <br />
-              See How Many Think Like You.
-            </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <BrandMark size={40} />
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
+              <p className="text-xs text-[var(--muted)]">
+                Anonymously Think in Public.
+                <br />
+                See How Many Think Like You.
+              </p>
+            </div>
           </div>
           {/* On mobile the handle sits with the title so the action row below
               can be a clean toolbar. On sm+ this collapses into the right

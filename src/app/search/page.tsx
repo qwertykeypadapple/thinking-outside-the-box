@@ -3,6 +3,7 @@ import { keywordSearch, semanticSearch, type SearchHit } from "@/lib/search/stor
 import { getIdentity } from "@/lib/identity/cookie";
 import { recordEvent } from "@/lib/analytics/store";
 import { SearchResults } from "@/components/search-results";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +39,12 @@ export default async function SearchPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight">Search</h1>
-          <p className="text-xs text-[var(--muted)]">Public chats only.</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandMark size={40} />
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight">Search</h1>
+            <p className="text-xs text-[var(--muted)]">Public chats only.</p>
+          </div>
         </div>
         <Link
           href="/"

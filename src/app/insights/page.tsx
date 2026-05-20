@@ -14,6 +14,7 @@ import {
   getHardLimitUsd,
   getSoftLimitUsd,
 } from "@/lib/llm/usage";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -76,11 +77,14 @@ export default async function InsightsPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight">Insights</h1>
-          <p className="text-xs text-[var(--muted)]">
-            Self-hosted analytics · admin view · no third-party trackers
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandMark size={40} />
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight">Insights</h1>
+            <p className="text-xs text-[var(--muted)]">
+              Self-hosted analytics · admin view · no third-party trackers
+            </p>
+          </div>
         </div>
         <Link
           href="/"

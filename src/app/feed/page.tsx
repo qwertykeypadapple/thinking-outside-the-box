@@ -13,6 +13,7 @@ import { keywordSearch, semanticSearch, type SearchHit } from "@/lib/search/stor
 import { recordEvent } from "@/lib/analytics/store";
 import { SearchResults } from "@/components/search-results";
 import { ChatCard } from "@/components/chat-card";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -69,13 +70,16 @@ export default async function FeedPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight">Feed</h1>
-          <p className="text-xs text-[var(--muted)]">
-            {query
-              ? `${totalHits} match${totalHits === 1 ? "" : "es"} in ${tab === "trending" ? "Trending" : "Following"} for “${query}”.`
-              : `${browseChats.length} chat${browseChats.length === 1 ? "" : "s"} ${tab === "trending" ? "thinking out loud right now" : "from people you follow"}.`}
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandMark size={40} />
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight">Feed</h1>
+            <p className="text-xs text-[var(--muted)]">
+              {query
+                ? `${totalHits} match${totalHits === 1 ? "" : "es"} in ${tab === "trending" ? "Trending" : "Following"} for “${query}”.`
+                : `${browseChats.length} chat${browseChats.length === 1 ? "" : "s"} ${tab === "trending" ? "thinking out loud right now" : "from people you follow"}.`}
+            </p>
+          </div>
         </div>
         <Link
           href="/"

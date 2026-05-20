@@ -11,6 +11,7 @@ import type { PublicChatPreview } from "@/lib/chat/store";
 import { EditBio } from "./edit-bio";
 import { DeleteMe } from "./delete-me";
 import { FollowButton } from "@/components/follow-button";
+import { BrandMark } from "@/components/brand-mark";
 import { recordEvent } from "@/lib/analytics/store";
 
 export const dynamic = "force-dynamic";
@@ -47,16 +48,19 @@ export default async function ProfilePage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
-        <div className="min-w-0">
-          <h1 className="font-mono text-2xl font-semibold tracking-tight break-all">{summary.user.handle}</h1>
-          <p className="text-xs text-[var(--muted)]">
-            joined {relativeTime(summary.user.created_at)} · last seen {relativeTime(summary.user.last_seen_at)}
-            <br className="sm:hidden" />
-            <span className="hidden sm:inline">{" · "}</span>
-            <span className="font-mono">{followerCount}</span> follower{followerCount === 1 ? "" : "s"}
-            {" · "}
-            <span className="font-mono">{followingCount}</span> following
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandMark size={40} />
+          <div className="min-w-0">
+            <h1 className="font-mono text-2xl font-semibold tracking-tight break-all">{summary.user.handle}</h1>
+            <p className="text-xs text-[var(--muted)]">
+              joined {relativeTime(summary.user.created_at)} · last seen {relativeTime(summary.user.last_seen_at)}
+              <br className="sm:hidden" />
+              <span className="hidden sm:inline">{" · "}</span>
+              <span className="font-mono">{followerCount}</span> follower{followerCount === 1 ? "" : "s"}
+              {" · "}
+              <span className="font-mono">{followingCount}</span> following
+            </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {!isSelf && identity && (

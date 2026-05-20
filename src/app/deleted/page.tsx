@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-static";
 
@@ -9,6 +10,9 @@ export const dynamic = "force-static";
 export default function DeletedPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pt-12 pb-4">
+      <div className="mb-6">
+        <BrandMark size={40} />
+      </div>
       <h1 className="mb-4 text-2xl font-semibold tracking-tight">Your data is gone.</h1>
       <p className="mb-2 text-sm text-[var(--muted)]">
         Your profile, all chats you owned, your follows, and your event history have
