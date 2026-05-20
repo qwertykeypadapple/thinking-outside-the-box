@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Think Outside the Box
 
-## Getting Started
+> **Think in public. Find your people.**
 
-First, run the development server:
+A platform where people chat with AI in public, and the system surfaces other users currently — or recently — exploring similar topics.
+
+Most AI conversations happen behind a login wall. This makes them visible by default, clusters them by topic, and connects the strangers who are thinking about the same thing right now.
+
+**Live**: https://thinking-outside-the-box.onrender.com
+
+**Free. Open source. Donation-funded.** Target running cost under $20/month while small.
+
+---
+
+## How it works
+
+- Open the site, pass an invisible [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) check, get an auto-generated handle (`curious-otter-42`-style). No email, no password, no account screen.
+- Identity lives in a signed cookie on your device. Switch devices or clear cookies and you start fresh — by design.
+- Send a message. As you chat, embeddings + tags surface other users exploring similar topics, live and from the last 24 hours.
+- Default visibility is public. A one-click toggle flips it to unlisted (link-only).
+
+## Tech stack
+
+- **Next.js 16** (App Router, Turbopack)
+- **Supabase** (Postgres + pgvector + Realtime broadcast)
+- **Anthropic Claude** (Sonnet 4.6 for chat, Haiku 4.5 for moderation/tagging)
+- **Voyage AI** (semantic embeddings)
+- **Cloudflare Turnstile** (invisible human check)
+- **Sentry** (error monitoring, no PII / no session replay)
+- **Render** (web service hosting)
+
+## Run it locally
+
+You'll need Node 20+, a Supabase project, and either a local MLX server or an Anthropic API key.
 
 ```bash
+git clone https://github.com/qwertykeypadapple/thinking-outside-the-box.git
+cd thinking-outside-the-box
+
+# Copy the env template and fill in your keys
+cp .env.example .env.local
+
+# Apply the SQL migrations in supabase/migrations/*.sql via
+# Supabase Dashboard → SQL Editor (in order).
+
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Required env vars (minimum)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+|---|---|
+| `COOKIE_SECRET` | HMAC key for signed identity cookies (≥32 chars) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase key |
+| `SUPABASE_SECRET_KEY` | Server-only Supabase key (never expose) |
+| `LLM_PROVIDER` | `mlx` (local) or `anthropic` |
 
-## Learn More
+See [`.env.example`](./.env.example) for the full list, including Sentry, Turnstile, embeddings, and moderation knobs. Everything optional soft-disables when its env vars are unset.
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/                  routes + server actions (App Router)
+    api/chat/           LLM streaming route handler
+    c/[chatId]/         individual chat page
+    feed/               public feed + unified search
+    insights/           admin analytics (gated by ADMIN_HANDLE)
+    reports/            moderation queue (gated by ADMIN_HANDLE)
+    u/[handle]/         user profile + one-time handle rename
+  components/           shared UI (chat-view, turnstile-widget, etc.)
+  lib/                  domain logic (identity, llm, embeddings, moderator, …)
+  proxy.ts              Next 16 middleware — mints the identity cookie
+  instrumentation.ts    Sentry server + edge init
+  instrumentation-client.ts  Sentry browser init
+supabase/migrations/    SQL migrations — apply in numbered order
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Issues and PRs are welcome. The project is structured around a strict privacy stance — no PII columns, no session replay, no chat content leaves the platform. Changes that conflict with that need explicit discussion in an issue first.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Funding
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is donation-funded via [GitHub Sponsors](https://github.com/sponsors). Nothing is paywalled and nothing ever will be. Donations cover Anthropic API costs + hosting. The `/costs` page on the live site shows actual spend.
+
+## License
+
+[MIT](./LICENSE) — qwertykeypadapple and contributors.
