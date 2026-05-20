@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafaf7;
+  --foreground: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #5b21b6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --muted: #a1a1aa;
+    --border: #27272a;
+    --accent: #a78bfa;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* iOS Safari zooms the viewport when an input is focused unless the input's
+   font-size is at least 16px. Our chat / search / bio inputs use text-sm
+   (14px) for desktop density — clamp them up on narrow screens so phones
+   don't yank the layout sideways every time the keyboard appears. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
