@@ -6,14 +6,14 @@ export const dynamic = "force-static";
 // Numbers below are TARGETS / TYPICALS; update them with real billing data
 // once we're deployed. Cap is enforced in code via the rate limiter (PLAN.md §7.2).
 const monthly = [
-  { item: "Render (Free web service)", cost: "$0", note: "Free tier — 750 hours/mo, spins down after 15 min idle. Starter at $7/mo if cold starts get annoying." },
-  { item: "Supabase (Free)", cost: "$0", note: "500 MB DB, 50k MAU, 5 GB egress." },
-  { item: "Cloudflare (Free) + Turnstile", cost: "$0", note: "CDN + DDoS + invisible human check." },
-  { item: "Anthropic Claude (Sonnet 4.6 + Haiku 4.5)", cost: "≤ $15", note: "Model split + prompt caching + Batch API. Kill switch at $25/mo." },
+  { item: "Render Starter", cost: "$7", note: "Always-warm Node web service. Kills cold-start jank that would scare first-time visitors. Upgrade from Free's 750-hr tier; small price for not bouncing on first paint." },
+  { item: "Supabase (Free)", cost: "$0", note: "500 MB DB, 50k MAU, 5 GB egress. pgvector + Realtime + 17 migrations all on the free tier." },
+  { item: "Cloudflare Turnstile (Free)", cost: "$0", note: "Invisible human check on first visit + 24h re-verification. 10M requests/month free." },
+  { item: "Anthropic Claude (Sonnet 4.6 + Haiku 4.5)", cost: "≤ $15", note: "Model split — Sonnet for replies, Haiku for moderation/tagging. Hard kill-switch at $25/day refuses new chats until UTC midnight." },
   { item: "Voyage AI embeddings", cost: "≈ $0", note: "Free tier covers 200M tokens/month — plenty at our scale." },
-  { item: "Domain registration", cost: "≈ $1", note: "Amortized monthly." },
-  { item: "GitHub (Free)", cost: "$0", note: "Public repo + Actions minutes." },
-  { item: "Sentry (Free)", cost: "$0", note: "5k errors/month." },
+  { item: "GitHub (Free)", cost: "$0", note: "Public repo + Actions minutes (CI + gitleaks + Dependabot)." },
+  { item: "Sentry (Free)", cost: "$0", note: "5k errors/month. Source maps uploaded on every Render deploy." },
+  { item: "Open Collective fiscal host", cost: "5% of donations", note: "Open Source Collective takes 5% to handle tax-deductible receipts + transparent budget. Not a fixed cost — only a fee on what gets raised." },
 ];
 
 export default function CostsPage() {
@@ -68,7 +68,8 @@ export default function CostsPage() {
           <li>Per-handle rate limits double as cost ceilings (30 msg/hr, 150 msg/day default; 10/hr for the first 24h on a new handle).</li>
           <li>Model split: Sonnet 4.6 only for user-facing replies; Haiku 4.5 for tagging, moderation, summarization.</li>
           <li>Prompt caching on the system prompt (90% discount on cached tokens).</li>
-          <li>Anthropic console alert at $15/mo spend; automated read-only mode at $25/mo.</li>
+          <li>Daily spend kill-switch: soft alert at $15 (shown on /insights), hard cap at $25/day refuses new chats with HTTP 429 until UTC midnight.</li>
+          <li>Cloudflare Turnstile gates first-message bot abuse before it touches Anthropic.</li>
         </ul>
       </section>
 
