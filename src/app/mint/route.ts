@@ -18,7 +18,13 @@ export async function GET(req: NextRequest) {
   const rawTo = req.nextUrl.searchParams.get("to") ?? "/";
   const to = sanitizeRedirectPath(rawTo);
 
-  const dest = new URL(to, req.url);
+  // CRITICAL: use req.nextUrl.origin, NOT req.url, as the base. req.url is
+  // built from the Node server's bind address (e.g. http://0.0.0.0:10000
+  // on Render's Starter tier) which would produce a useless Location header
+  // for external clients. req.nextUrl.origin is constructed from the
+  // X-Forwarded-Host + X-Forwarded-Proto headers Render sets on the proxy,
+  // so it always reflects the publicly-resolvable URL.
+  const dest = new URL(to, req.nextUrl.origin);
   // Tell the destination it's a fresh mint so chat-view can render the
   // "your handle lives on this device only" first-visit notice. Returning
   // visitors (cookie already present) skip the flag entirely.
