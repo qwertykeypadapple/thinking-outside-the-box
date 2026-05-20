@@ -214,9 +214,9 @@ export function ChatView({
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
               <p className="text-xs text-[var(--muted)]">
-                Anonymously ask in public,
+                Ask anything.
                 <br />
-                see how many have the same queries like you.
+                See who&apos;s wondering the same.
               </p>
             </div>
           </div>

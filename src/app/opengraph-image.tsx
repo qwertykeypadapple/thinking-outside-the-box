@@ -15,7 +15,7 @@ import { ImageResponse } from "next/og";
 // "block" on multi-child divs will silently break the route. All multi-
 // child divs below declare flex explicitly.
 
-export const alt = "Thinking Outside the Box — Anonymously ask in public, see how many have the same queries like you.";
+export const alt = "Thinking Outside the Box — Ask anything. See who's wondering the same.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -61,11 +61,9 @@ export default function OgImage() {
             lineHeight: 1.15,
           }}
         >
-          {/* Tagline broken at the comma so the wrap lands on a clause
-              boundary instead of mid-phrase. Single line would overflow
-              1040px usable width at 40px font. */}
-          <span>Anonymously ask in public,</span>
-          <span>see how many have the same queries like you.</span>
+          {/* Two-sentence tagline, one sentence per line. */}
+          <span>Ask anything.</span>
+          <span>See who&apos;s wondering the same.</span>
         </div>
         <div
           style={{
