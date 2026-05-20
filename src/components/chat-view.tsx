@@ -13,6 +13,7 @@ import {
 } from "@/app/actions";
 import { RealtimeMatchTrigger } from "@/components/realtime-match-trigger";
 import { BrandMark } from "@/components/brand-mark";
+import { MarkdownContent } from "@/components/markdown-content";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -213,9 +214,9 @@ export function ChatView({
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
               <p className="text-xs text-[var(--muted)]">
-                Anonymously Think in Public.
+                Anonymously ask in public,
                 <br />
-                See How Many Think Like You.
+                see how many have the same queries like you.
               </p>
             </div>
           </div>
@@ -515,13 +516,19 @@ function Message({
       )}
       <div
         className={
-          "max-w-[85%] whitespace-pre-wrap rounded-lg px-4 py-2 text-sm leading-relaxed " +
+          "max-w-[85%] rounded-lg px-4 py-2 text-sm leading-relaxed " +
           (isUser
-            ? "bg-[var(--accent)] text-white"
+            ? "whitespace-pre-wrap bg-[var(--accent)] text-white"
             : "border border-[var(--border)] bg-black/3 dark:bg-white/5")
         }
       >
-        {content || (
+        {content ? (
+          isUser ? (
+            content
+          ) : (
+            <MarkdownContent>{content}</MarkdownContent>
+          )
+        ) : (
           <span className="opacity-50">{pending ? "typing…" : "…"}</span>
         )}
         {pending && content && (

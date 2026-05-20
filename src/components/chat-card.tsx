@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PublicChatPreview } from "@/lib/chat/store";
-import { relativeTime, truncate } from "@/lib/format";
+import { relativeTime, stripMarkdown, truncate } from "@/lib/format";
 
 // Single shared card for public-chat listings. Used on the homepage discovery
 // hub and on /feed. Kept dumb (no client interactivity, no analytics, no
@@ -16,7 +16,7 @@ export function ChatCard({ chat }: { chat: PublicChatPreview }) {
     : "(no opening message)";
   const reply =
     chat.last_message && chat.last_message.role === "assistant"
-      ? truncate(chat.last_message.content, 220)
+      ? truncate(stripMarkdown(chat.last_message.content), 220)
       : null;
 
   return (

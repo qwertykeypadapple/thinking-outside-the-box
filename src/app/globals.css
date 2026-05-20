@@ -28,9 +28,51 @@
   }
 }
 
-body {
+html {
   background: var(--background);
+}
+
+body {
   color: var(--foreground);
+  background: transparent;
+  position: relative;
+}
+
+/* Soft animated gradient blobs anchored to each corner of the viewport, sitting
+   behind all content. The hue slowly rotates so the empty whitespace shifts
+   color over ~45s without ever pulling focus from the chat itself. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(60vmax 50vmax at 0% 0%, rgba(167, 139, 250, 0.32), transparent 60%),
+    radial-gradient(55vmax 45vmax at 100% 0%, rgba(244, 114, 182, 0.26), transparent 60%),
+    radial-gradient(60vmax 55vmax at 100% 100%, rgba(56, 189, 248, 0.26), transparent 60%),
+    radial-gradient(55vmax 50vmax at 0% 100%, rgba(110, 231, 183, 0.24), transparent 60%);
+  animation: corner-hue 45s linear infinite;
+  will-change: filter;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background-image:
+      radial-gradient(60vmax 50vmax at 0% 0%, rgba(139, 92, 246, 0.34), transparent 60%),
+      radial-gradient(55vmax 45vmax at 100% 0%, rgba(236, 72, 153, 0.26), transparent 60%),
+      radial-gradient(60vmax 55vmax at 100% 100%, rgba(14, 165, 233, 0.28), transparent 60%),
+      radial-gradient(55vmax 50vmax at 0% 100%, rgba(16, 185, 129, 0.22), transparent 60%);
+  }
+}
+
+@keyframes corner-hue {
+  from { filter: hue-rotate(0deg); }
+  to   { filter: hue-rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 /* iOS Safari zooms the viewport when an input is focused unless the input's

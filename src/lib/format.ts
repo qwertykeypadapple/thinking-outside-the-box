@@ -7,6 +7,29 @@ export function truncate(s: string, n: number): string {
   return s.slice(0, n).trimEnd() + "…";
 }
 
+// Strip markdown syntax to plain text for previews/cards where rendering
+// block elements would break the layout. Keeps the text content; drops
+// emphasis markers, headings, list bullets, code fences, blockquotes, and
+// link/image syntax. Whitespace is collapsed since previews are single-line-ish.
+export function stripMarkdown(s: string): string {
+  return s
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1$2")
+    .replace(/(^|[^_])_([^_\n]+)_/g, "$1$2")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // Coarse "X minutes/hours/days ago" formatter. Renders on the server so
 // timestamps don't shift between SSR and hydration. Caller decides where to
 // place it — we don't return absolute strings since clients can't tell the

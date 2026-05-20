@@ -115,9 +115,9 @@ function Header({ handle, lastChatId }: { handle: string; lastChatId: string | n
             Thinking Outside the Box
           </h1>
           <p className="text-sm text-[var(--muted)]">
-            Anonymously Think in Public.
+            Anonymously ask in public,
             <br />
-            See How Many Think Like You.
+            see how many have the same queries like you.
           </p>
         </div>
       </div>
