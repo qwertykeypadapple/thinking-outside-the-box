@@ -15,9 +15,37 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Public canonical URL. Env-overridable so dev / preview deploys point at the
+// right host in the OG tags they ship. metadataBase makes relative OG image
+// paths resolve against this.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://thinking-outside-the-box.onrender.com";
+
+const TITLE = "Think Outside the Box";
+const DESCRIPTION =
+  "AI chats are usually private. Here they're public — and the system shows you who's exploring something similar right now.";
+
 export const metadata: Metadata = {
-  title: "Think Outside the Box",
-  description: "Think in public. Find your people.",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: TITLE,
+    type: "website",
+    locale: "en_US",
+    // /opengraph-image.tsx is auto-discovered by Next 16 and rendered on demand.
+    // Listing it explicitly lets crawlers that don't follow the convention find it.
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 // Explicit viewport — Next 16 already injects a sensible default but pinning

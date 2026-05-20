@@ -1,7 +1,10 @@
 version: 2
+# PLAN §8.5: Dependabot keeps supply-chain risk down by raising PRs against
+# known-vulnerable or out-of-date deps. Groups patch+minor bumps into one PR
+# per category so the firehose is manageable for a solo project.
 updates:
   - package-ecosystem: "npm"
-    directory: "/web"
+    directory: "/"
     schedule:
       interval: "weekly"
     groups:
@@ -19,3 +22,6 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"

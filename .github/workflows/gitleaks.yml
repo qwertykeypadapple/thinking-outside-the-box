@@ -1,0 +1,33 @@
+# Scan every PR + push for committed secrets. PLAN §8.5 explicitly requires
+# gitleaks as part of the supply-chain hygiene baseline. Catches the things
+# .env-style gitignores miss (e.g. hardcoded keys, dev tokens left in
+# source files, .env.local that got force-added).
+#
+# Free for public repos. Private repos need a GITLEAKS_LICENSE secret.
+
+name: gitleaks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the scan can diff PR commits against base.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # If this repo is private, generate a free license at
+          # gitleaks.io and add it as repo secret GITLEAKS_LICENSE.
+          # Public repos can leave this line in — it's a no-op when unset.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}

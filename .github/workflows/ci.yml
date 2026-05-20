@@ -1,0 +1,38 @@
+# Type-check + lint on every PR and push to main. Cheap; runs in ~90s on
+# GitHub's free tier and catches regressions before they hit Render.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel an in-flight run if the same branch gets a new push. Saves Actions
+# minutes when you're rapid-firing commits.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Match the Node version Render runs (see .env.example +
+          # Render service dashboard). Bump together when you upgrade.
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        # next lint is the Next.js-aware ESLint wrapper. Configured by
+        # eslint.config.mjs at the repo root.
+        run: npm run lint
