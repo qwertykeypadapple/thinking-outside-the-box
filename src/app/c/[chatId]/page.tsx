@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { getIdentity } from "@/lib/identity/cookie";
+import { requireIdentity } from "@/lib/identity/require-identity";
 import {
   getChat,
   getMessages,
@@ -16,21 +15,25 @@ import { recordEvent } from "@/lib/analytics/store";
 
 export default async function ChatPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ chatId: string }>;
+  searchParams: Promise<{ welcome?: string }>;
 }) {
   const { chatId } = await params;
-  const identity = await getIdentity();
-  if (!identity) throw new Error("identity missing — proxy did not run");
+  // /mint sets ?welcome=1 on a fresh mint; chat-view shows the "your handle
+  // lives on this device only" notice when this is true. Replaces the old
+  // x-handle-new request header that proxy.ts used to set.
+  const sp = await searchParams;
+  const isNew = sp.welcome === "1";
+
+  const identity = await requireIdentity(`/c/${chatId}`);
 
   const chat = await getChat(chatId);
   if (!chat) notFound();
 
   const isOwner = chat.owner_handle === identity.handle;
   const visibility: Visibility = chat.visibility === "public" ? "public" : "unlisted";
-
-  const h = await headers();
-  const isNew = h.get("x-handle-new") === "1";
 
   // In the "anyone can continue" model, matches are useful to everyone — not
   // just the original chat owner — so we always query them.

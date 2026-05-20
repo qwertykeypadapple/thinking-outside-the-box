@@ -305,7 +305,13 @@ export function ChatView({
               Switching devices or clearing cookies means a fresh handle — by design.
             </p>
             <button
-              onClick={() => setShowHandleNotice(false)}
+              onClick={() => {
+                setShowHandleNotice(false);
+                // Drop ?welcome=1 from the URL so back-button + reload don't
+                // re-show the notice. Replace instead of push to avoid adding
+                // a history entry.
+                router.replace(`/c/${chatId}`);
+              }}
               className="shrink-0 text-xs text-[var(--muted)] hover:text-[var(--foreground)]"
               aria-label="Dismiss notice"
             >
