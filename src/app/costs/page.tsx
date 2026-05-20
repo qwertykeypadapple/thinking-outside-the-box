@@ -13,7 +13,7 @@ const monthly = [
   { item: "Voyage AI embeddings", cost: "≈ $0", note: "Free tier covers 200M tokens/month — plenty at our scale." },
   { item: "GitHub (Free)", cost: "$0", note: "Public repo + Actions minutes (CI + gitleaks + Dependabot)." },
   { item: "Sentry (Free)", cost: "$0", note: "5k errors/month. Source maps uploaded on every Render deploy." },
-  { item: "Open Collective fiscal host", cost: "5% of donations", note: "Open Source Collective takes 5% to handle tax-deductible receipts + transparent budget. Not a fixed cost — only a fee on what gets raised." },
+  { item: "Open Collective fiscal host", cost: "10% of donations", note: "Open Source Collective takes 10% to handle tax-deductible receipts + transparent budget. Not a fixed monthly cost — only a fee on what's raised. Verify current rate on their site before relying on it." },
 ];
 
 export default function CostsPage() {

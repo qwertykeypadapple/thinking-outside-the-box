@@ -69,6 +69,7 @@ export default function SponsorsPage() {
           <DonateCard
             title="Open Collective"
             blurb="Tax-deductible receipts via Open Source Collective (501(c)(3) fiscal host). Public budget. Best for companies + larger donations."
+            footnote="Fiscal host takes 10% of donations to cover their legal/accounting/banking infrastructure. Net to the project: $0.90 per $1 donated."
             href={ocReady ? OPEN_COLLECTIVE_URL : null}
             cta="Donate on Open Collective →"
             pending={!ocReady}
@@ -114,12 +115,14 @@ export default function SponsorsPage() {
 function DonateCard({
   title,
   blurb,
+  footnote,
   href,
   cta,
   pending,
 }: {
   title: string;
   blurb: string;
+  footnote?: string;
   href: string | null;
   cta: string;
   pending: boolean;
@@ -135,6 +138,9 @@ function DonateCard({
         )}
       </div>
       <p className="text-xs text-[var(--muted)]">{blurb}</p>
+      {footnote && (
+        <p className="text-[10px] italic text-[var(--muted)]">{footnote}</p>
+      )}
       {href ? (
         <a
           href={href}
