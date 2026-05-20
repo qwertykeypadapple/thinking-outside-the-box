@@ -337,6 +337,12 @@ function Footer() {
         <Link href="/costs" className="hover:text-[var(--foreground)]">
           Costs
         </Link>
+        <Link href="/privacy" className="hover:text-[var(--foreground)]">
+          Privacy
+        </Link>
+        <Link href="/terms" className="hover:text-[var(--foreground)]">
+          Terms
+        </Link>
       </div>
       <div>
         Free · open source · donation-funded
