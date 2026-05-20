@@ -32,6 +32,18 @@ html {
   background: var(--background);
 }
 
+/* Tailwind v4 preflight resets <button> to cursor: default. Restore the
+   pointer/hand cursor on hover for every enabled button; show not-allowed
+   on disabled ones so it's obvious why nothing happens on click. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 body {
   color: var(--foreground);
   background: transparent;
@@ -39,8 +51,9 @@ body {
 }
 
 /* Soft animated gradient blobs anchored to each corner of the viewport, sitting
-   behind all content. The hue slowly rotates so the empty whitespace shifts
-   color over ~45s without ever pulling focus from the chat itself. */
+   behind all content. All four corners are purple — different shades, from
+   deep violet through lavender — and the hue gently breathes ±15° so it
+   stays in the purple family instead of cycling through the full spectrum. */
 body::before {
   content: "";
   position: fixed;
@@ -48,27 +61,35 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(60vmax 50vmax at 0% 0%, rgba(167, 139, 250, 0.32), transparent 60%),
-    radial-gradient(55vmax 45vmax at 100% 0%, rgba(244, 114, 182, 0.26), transparent 60%),
-    radial-gradient(60vmax 55vmax at 100% 100%, rgba(56, 189, 248, 0.26), transparent 60%),
-    radial-gradient(55vmax 50vmax at 0% 100%, rgba(110, 231, 183, 0.24), transparent 60%);
-  animation: corner-hue 45s linear infinite;
+    /* top-left: deep purple (the brand accent) */
+    radial-gradient(60vmax 50vmax at 0% 0%, rgba(91, 33, 182, 0.22), transparent 60%),
+    /* top-right: violet */
+    radial-gradient(55vmax 45vmax at 100% 0%, rgba(124, 58, 237, 0.26), transparent 60%),
+    /* bottom-right: lavender */
+    radial-gradient(60vmax 55vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 60%),
+    /* bottom-left: pale lavender */
+    radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.40), transparent 60%);
+  animation: corner-hue 30s ease-in-out infinite alternate;
   will-change: filter;
 }
 
 @media (prefers-color-scheme: dark) {
   body::before {
     background-image:
-      radial-gradient(60vmax 50vmax at 0% 0%, rgba(139, 92, 246, 0.34), transparent 60%),
-      radial-gradient(55vmax 45vmax at 100% 0%, rgba(236, 72, 153, 0.26), transparent 60%),
-      radial-gradient(60vmax 55vmax at 100% 100%, rgba(14, 165, 233, 0.28), transparent 60%),
-      radial-gradient(55vmax 50vmax at 0% 100%, rgba(16, 185, 129, 0.22), transparent 60%);
+      /* top-left: deep violet, brighter so it reads on near-black */
+      radial-gradient(60vmax 50vmax at 0% 0%, rgba(124, 58, 237, 0.34), transparent 60%),
+      /* top-right: violet */
+      radial-gradient(55vmax 45vmax at 100% 0%, rgba(139, 92, 246, 0.30), transparent 60%),
+      /* bottom-right: lavender */
+      radial-gradient(60vmax 55vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 60%),
+      /* bottom-left: pale lavender */
+      radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.26), transparent 60%);
   }
 }
 
 @keyframes corner-hue {
-  from { filter: hue-rotate(0deg); }
-  to   { filter: hue-rotate(360deg); }
+  from { filter: hue-rotate(-15deg); }
+  to   { filter: hue-rotate(15deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
