@@ -1,4 +1,4 @@
-# Think Outside the Box
+# Thinking Outside the Box
 
 > **Think in public. Find your people.**
 

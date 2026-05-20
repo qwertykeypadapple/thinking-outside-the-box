@@ -208,7 +208,7 @@ export function ChatView({
       <header className="mb-4 flex flex-col gap-3 border-b border-[var(--border)] pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold tracking-tight">Think Outside the Box</h1>
+            <h1 className="truncate text-lg font-semibold tracking-tight">Thinking Outside the Box</h1>
             <p className="text-xs text-[var(--muted)]">Think in public. Find your people.</p>
           </div>
           {/* On mobile the handle sits with the title so the action row below

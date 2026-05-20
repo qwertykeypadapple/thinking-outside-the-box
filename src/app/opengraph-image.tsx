@@ -15,7 +15,7 @@ import { ImageResponse } from "next/og";
 // "block" on multi-child divs will silently break the route. All multi-
 // child divs below declare flex explicitly.
 
-export const alt = "Think Outside the Box — Think in public. Find your people.";
+export const alt = "Thinking Outside the Box — Think in public. Find your people.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -38,13 +38,17 @@ export default function OgImage() {
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
             fontSize: 120,
             fontWeight: 700,
-            lineHeight: 1,
+            lineHeight: 0.95,
             letterSpacing: "-0.04em",
           }}
         >
-          Think Outside the Box
+          {/* Two lines: "Thinking Outside" + "the Box". A single line at 120px
+              overflows the 1200px-wide canvas with this longer wordmark. */}
+          <span>Thinking Outside</span>
+          <span>the Box</span>
         </div>
         <div
           style={{

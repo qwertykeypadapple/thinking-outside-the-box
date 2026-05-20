@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://thinking-outside-the-box.onrender.com";
 
-const TITLE = "Think Outside the Box";
+const TITLE = "Thinking Outside the Box";
 const DESCRIPTION =
   "AI chats are usually private. Here they're public — and the system shows you who's exploring something similar right now.";
 
