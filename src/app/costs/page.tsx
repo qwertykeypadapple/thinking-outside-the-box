@@ -6,7 +6,7 @@ export const dynamic = "force-static";
 // Numbers below are TARGETS / TYPICALS; update them with real billing data
 // once we're deployed. Cap is enforced in code via the rate limiter (PLAN.md §7.2).
 const monthly = [
-  { item: "Vercel (Hobby)", cost: "$0", note: "Free tier — 100 GB bandwidth, unlimited builds." },
+  { item: "Render (Free web service)", cost: "$0", note: "Free tier — 750 hours/mo, spins down after 15 min idle. Starter at $7/mo if cold starts get annoying." },
   { item: "Supabase (Free)", cost: "$0", note: "500 MB DB, 50k MAU, 5 GB egress." },
   { item: "Cloudflare (Free) + Turnstile", cost: "$0", note: "CDN + DDoS + invisible human check." },
   { item: "Anthropic Claude (Sonnet 4.6 + Haiku 4.5)", cost: "≤ $15", note: "Model split + prompt caching + Batch API. Kill switch at $25/mo." },

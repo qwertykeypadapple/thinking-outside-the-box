@@ -41,7 +41,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on everything except Next internals, static files, and the favicon.
-    "/((?!_next/|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)$).*)",
+    // Run on everything except Next internals, static files, the favicon,
+    // and the Sentry tunnel route (browser SDK POSTs events to /monitoring
+    // — minting an identity cookie or 307'ing would break the ingest path).
+    "/((?!monitoring|_next/|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)$).*)",
   ],
 };
