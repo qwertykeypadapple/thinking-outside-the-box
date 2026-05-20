@@ -95,14 +95,25 @@ export async function renameHandle(
     p_new_handle: newHandle,
   });
   if (error) {
-    // Surface a clean message to the action layer. The Postgres function uses
-    // specific SQLSTATEs we can map; everything else bubbles raw.
+    // Surface a SHORT, user-readable message — the action layer passes
+    // this straight to the UI's error label. The Postgres function uses
+    // specific SQLSTATEs; we also fall back to a substring check on the
+    // raw message in case Supabase doesn't always propagate the code.
     const code = (error as { code?: string }).code ?? "";
-    if (code === "23505") throw new Error(`handle "${newHandle}" is taken`);
-    if (code === "22023") throw new Error(`invalid handle: ${error.message}`);
-    if (code === "23514") throw new Error("you've already used your one-time rename");
-    if (code === "P0002") throw new Error("source handle not found");
-    throw new Error(`renameHandle: ${error.message}`);
+    const msg = (error.message ?? "").toLowerCase();
+    if (code === "23505" || msg.includes("already taken") || msg.includes("duplicate key")) {
+      throw new Error("User already exists.");
+    }
+    if (code === "22023" || msg.includes("invalid handle")) {
+      throw new Error("Invalid handle.");
+    }
+    if (code === "23514" || msg.includes("already been renamed")) {
+      throw new Error("You've already used your one-time rename.");
+    }
+    if (code === "P0002") {
+      throw new Error("Account not found.");
+    }
+    throw new Error("Rename failed. Try again.");
   }
 }
 
