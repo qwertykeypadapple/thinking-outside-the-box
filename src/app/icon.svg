@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!--
+    Brand favicon — visual pun on the project name "Thinking Outside the Box".
+    Purple rounded square (matches CSS --accent: #5b21b6 + the OG image).
+    White box outline sits in the lower-left; a single white dot escapes
+    diagonally to the upper-right — literally thinking outside the box.
+
+    Reads at every common favicon size (16, 32, 48, 192). Element proportions
+    chosen so the box outline + dot both remain visible at 16px.
+  -->
+  <rect width="64" height="64" rx="14" fill="#5b21b6"/>
+  <rect x="12" y="22" width="34" height="34" rx="6"
+        stroke="#fafaf7" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="52" cy="14" r="8" fill="#fafaf7"/>
+</svg>
