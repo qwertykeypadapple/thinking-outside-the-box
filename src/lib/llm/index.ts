@@ -1,5 +1,6 @@
 import { MLXProvider } from "./mlx";
 import { AnthropicProvider } from "./anthropic";
+import { ClaudeCodeProvider } from "./claude-code";
 import type { ChatProvider } from "./types";
 
 export type { ChatMessage, ChatProvider, StreamOptions } from "./types";
@@ -16,6 +17,16 @@ export function getProvider(): ChatProvider {
     if (!apiKey) throw new Error("ANTHROPIC_API_KEY required when LLM_PROVIDER=anthropic");
     const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
     cached = new AnthropicProvider(model, apiKey);
+    return cached;
+  }
+
+  if (choice === "claude-code") {
+    // Local-dev-only path. Shells out to `claude -p` so iteration uses a
+    // Claude Code subscription instead of API credits. Render containers
+    // don't have the `claude` CLI or the OAuth keychain — set
+    // LLM_PROVIDER=anthropic for production env.
+    const model = process.env.CLAUDE_CODE_MODEL ?? "sonnet";
+    cached = new ClaudeCodeProvider(model);
     return cached;
   }
 

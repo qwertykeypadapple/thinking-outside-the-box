@@ -98,31 +98,13 @@ body::before {
   }
 }
 
-/* Phone-sized screens. iPhones are tall (~390×844), so a 60vmax×50vmax
-   blob anchored to a corner only reaches ~30% down the screen — leaving
-   the middle dark. Bump to 70vmax×60vmax with a wider 70% falloff so each
-   corner reaches well past the center and the four blobs blend smoothly
-   on a phone. Also slow the animation: animating a fixed full-viewport
-   filter on mobile Safari is GPU-expensive, and a longer cycle materially
-   reduces battery cost. */
+/* Phone-sized screens: hide the gradient layer entirely. On a tall iPhone
+   the corners crowded the chat text, and animating a fixed full-viewport
+   filter on mobile Safari is GPU-expensive anyway. Desktop keeps the
+   gradient; html's solid var(--background) shows through on mobile. */
 @media (max-width: 640px) {
   body::before {
-    background-image:
-      radial-gradient(70vmax 60vmax at 0% 0%, rgba(91, 33, 182, 0.22), transparent 70%),
-      radial-gradient(65vmax 55vmax at 100% 0%, rgba(124, 58, 237, 0.26), transparent 70%),
-      radial-gradient(70vmax 65vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 70%),
-      radial-gradient(65vmax 60vmax at 0% 100%, rgba(196, 181, 253, 0.40), transparent 70%);
-    animation-duration: 60s;
-  }
-}
-
-@media (max-width: 640px) and (prefers-color-scheme: dark) {
-  body::before {
-    background-image:
-      radial-gradient(70vmax 60vmax at 0% 0%, rgba(124, 58, 237, 0.34), transparent 70%),
-      radial-gradient(65vmax 55vmax at 100% 0%, rgba(139, 92, 246, 0.30), transparent 70%),
-      radial-gradient(70vmax 65vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 70%),
-      radial-gradient(65vmax 60vmax at 0% 100%, rgba(196, 181, 253, 0.26), transparent 70%);
+    display: none;
   }
 }
 
