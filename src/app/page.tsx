@@ -125,7 +125,7 @@ function Header({ handle, lastChatId }: { handle: string; lastChatId: string | n
         {lastChatId && (
           <Link
             href={`/c/${lastChatId}`}
-            className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-black/3 dark:hover:bg-white/5"
+            className="rounded-md border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-black/3 dark:hover:bg-white/5"
             title="Continue your most recent chat"
           >
             ← Your last chat
