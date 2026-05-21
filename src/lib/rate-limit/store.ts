@@ -1,10 +1,11 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
-// Limits from PLAN.md §7.2. Fresh handles (< 24h since created_at) are tighter
-// to slow throwaway-handle abuse. Sponsors get 2× later (when we wire that up).
+// Relaxed limits — established handles can chat freely; fresh handles
+// (< 24h since created_at) stay proportionally tighter to slow throwaway-
+// handle abuse. Sponsors get 2× later (when we wire that up).
 const LIMITS = {
-  fresh:       { hour: 10, day: 30 },
-  established: { hour: 30, day: 150 },
+  fresh:       { hour: 100, day: 200 },
+  established: { hour: 500, day: 1000 },
 };
 
 const FRESH_WINDOW_MS = 24 * 60 * 60 * 1000;
