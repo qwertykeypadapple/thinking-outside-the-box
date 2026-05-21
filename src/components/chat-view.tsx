@@ -15,6 +15,7 @@ import { RealtimeMatchTrigger } from "@/components/realtime-match-trigger";
 import { BrandMark } from "@/components/brand-mark";
 import { MarkdownContent } from "@/components/markdown-content";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { checkEffort } from "@/lib/content/effort";
 
 type Props = {
   handle: string;
@@ -377,28 +378,47 @@ export function ChatView({
           ))}
       </div>
 
-      <form onSubmit={onSubmit} className="mt-2 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={streaming}
-          placeholder={
-            streaming
-              ? "thinking…"
-              : isOwner
-                ? "ask anything"
-                : `continue ${ownerHandle}'s chat as ${handle}`
-          }
-          className="min-w-0 flex-1 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none"
-          autoFocus
-        />
-        <button
-          type="submit"
-          disabled={streaming || !input.trim()}
-          className="shrink-0 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
-        >
-          Send
-        </button>
+      <form onSubmit={onSubmit} className="mt-2">
+        {(() => {
+          // Mirror the server's effort gate so the user gets feedback before
+          // submit. isFirstMessage matches the server: chat has zero prior
+          // messages. Empty input is silent — no scolding before they type.
+          const isFirstMessage = messages.length === 0;
+          const effort = input.trim()
+            ? checkEffort(input, { isFirstMessage })
+            : { ok: true as const };
+          const blocked = !effort.ok;
+          return (
+            <>
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={streaming}
+                  placeholder={
+                    streaming
+                      ? "thinking…"
+                      : isOwner
+                        ? "ask anything"
+                        : `continue ${ownerHandle}'s chat as ${handle}`
+                  }
+                  className="min-w-0 flex-1 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={streaming || !input.trim() || blocked}
+                  className="shrink-0 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                >
+                  Send
+                </button>
+              </div>
+              {blocked && !effort.ok && (
+                <p className="mt-1 text-xs text-[var(--muted)]">{effort.reason}</p>
+              )}
+            </>
+          );
+        })()}
       </form>
     </div>
   );

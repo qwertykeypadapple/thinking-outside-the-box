@@ -17,6 +17,7 @@ import {
 } from "@/lib/chat/store";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { redact } from "@/lib/pii/redact";
+import { checkEffort } from "@/lib/content/effort";
 import { extractTags } from "@/lib/llm/tag-extractor";
 import { getEmbeddingProvider } from "@/lib/embeddings";
 import { getUser, upsertUser } from "@/lib/users/store";
@@ -171,6 +172,18 @@ export async function POST(req: NextRequest) {
     void recordEvent("chat_started", handle, { chatId, via: "first_message" });
   }
 
+  // Load prior messages once — used both to gate effort (isFirstMessage) and
+  // to build the LLM history below, so we save the second DB round-trip.
+  const priorMessages = await getMessages(chatId);
+  const isFirstMessage = priorMessages.length === 0;
+
+  // Low-effort gate. Cheap (string scan, no LLM). Catches asdf/aaaa/SHOUTING
+  // before any token spend. The 400 body is user-facing.
+  const effort = checkEffort(userText, { isFirstMessage });
+  if (!effort.ok) {
+    return new Response(effort.reason, { status: 400 });
+  }
+
   // Redact PII before storage — raw content never persisted (PLAN.md §4.5).
   // LLM history is loaded from DB after this insert, so the model sees the
   // redacted version too. Live stream below stays raw so the owner sees
@@ -186,7 +199,19 @@ export async function POST(req: NextRequest) {
   void moderateInBackground(chatId, userMessageId, userRedacted, "user");
   void recordEvent("message_sent", handle, { chatId, len: userText.length });
 
-  const history = await getMessages(chatId);
+  // Reuse priorMessages from above + the just-inserted row, instead of a
+  // second DB roundtrip via getMessages(chatId). Order matches what the DB
+  // would return (created_at ascending).
+  const history = [
+    ...priorMessages,
+    {
+      id: userMessageId,
+      role: "user" as const,
+      content: userRedacted,
+      senderHandle: handle,
+      status: "complete" as const,
+    },
+  ];
   const provider = getProvider();
 
   // Option C: insert the assistant row up front (status='pending') so other
