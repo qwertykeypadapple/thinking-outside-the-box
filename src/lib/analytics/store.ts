@@ -15,6 +15,7 @@ export const EVENT_TYPES = [
   "tag_unfollow",
   "search",
   "report_filed",
+  "message_blocked_low_signal",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];

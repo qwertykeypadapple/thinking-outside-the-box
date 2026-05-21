@@ -18,6 +18,7 @@ import {
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { redact } from "@/lib/pii/redact";
 import { checkEffort } from "@/lib/content/effort";
+import { classifySignal } from "@/lib/llm/signal";
 import { extractTags } from "@/lib/llm/tag-extractor";
 import { getEmbeddingProvider } from "@/lib/embeddings";
 import { getUser, upsertUser } from "@/lib/users/store";
@@ -182,6 +183,20 @@ export async function POST(req: NextRequest) {
   const effort = checkEffort(userText, { isFirstMessage });
   if (!effort.ok) {
     return new Response(effort.reason, { status: 400 });
+  }
+
+  // Signal classifier. Catches the gibberish that the heuristic doesn't — keysmash
+  // like "ckjsnjkcns", random unrelated word salad like "the bicycle marshmallow
+  // Tuesday", etc. One Haiku call, ~500ms, soft-bypasses on classifier failure
+  // (better to occasionally answer noise than to reject real messages). Disabled
+  // by SIGNAL_GATE_DISABLED=1.
+  const signal = await classifySignal(userText, { isFirstMessage });
+  if (signal && !signal.meaningful) {
+    void recordEvent("message_blocked_low_signal", handle, { reason: signal.reason });
+    return new Response(
+      "That doesn't look like a question or statement I can help with. Try rephrasing.",
+      { status: 400 },
+    );
   }
 
   // Redact PII before storage — raw content never persisted (PLAN.md §4.5).

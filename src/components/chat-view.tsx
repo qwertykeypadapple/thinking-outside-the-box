@@ -138,8 +138,11 @@ export function ChatView({
           return;
         }
         const errText = await res.text().catch(() => res.statusText);
-        const prefix = res.status === 429 ? "" : "[error: ";
-        const suffix = res.status === 429 ? "" : "]";
+        // 429 (rate limit) and 400 (effort/signal gates) already produce
+        // user-facing copy on the server. Wrap unexpected errors only.
+        const userFacing = res.status === 429 || res.status === 400;
+        const prefix = userFacing ? "" : "[error: ";
+        const suffix = userFacing ? "" : "]";
         setMessages((prev) => {
           const next = [...prev];
           next[next.length - 1] = { role: "assistant", content: `${prefix}${errText}${suffix}` };
