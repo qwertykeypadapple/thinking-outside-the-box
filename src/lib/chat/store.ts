@@ -36,7 +36,7 @@ export async function getChat(chatId: string): Promise<ChatRecord | null> {
 
 export async function createChat(
   handle: string,
-  visibility: Visibility = "unlisted",
+  visibility: Visibility = "public",
 ): Promise<ChatRecord> {
   const { data, error } = await getSupabaseAdmin()
     .from("chats")
