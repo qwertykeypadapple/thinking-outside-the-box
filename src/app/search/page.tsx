@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { keywordSearch, semanticSearch, type SearchHit } from "@/lib/search/store";
+import { getChatsPreviewInfo } from "@/lib/chat/store";
 import { getIdentity } from "@/lib/identity/cookie";
 import { recordEvent } from "@/lib/analytics/store";
 import { SearchResults } from "@/components/search-results";
@@ -21,6 +22,22 @@ export default async function SearchPage({
         semanticSearch(query, 20).catch(() => [] as SearchHit[]),
       ])
     : [[] as SearchHit[], [] as SearchHit[]];
+
+  // Hydrate every hit with the chat's latest AI reply so semantic-only
+  // hits stop showing "(no preview)" and keyword hits gain context beyond
+  // the matched fragment. Same DB shape /feed already uses.
+  if (query && (keyword.length > 0 || semantic.length > 0)) {
+    const ids = Array.from(new Set([...keyword, ...semantic].map((h) => h.id)));
+    const previews = await getChatsPreviewInfo(ids).catch(() => null);
+    if (previews) {
+      for (const h of keyword) {
+        h.last_ai_message = previews.get(h.id)?.last_ai_message ?? null;
+      }
+      for (const h of semantic) {
+        h.last_ai_message = previews.get(h.id)?.last_ai_message ?? null;
+      }
+    }
+  }
 
   const identity = await getIdentity();
   void recordEvent("page_view", identity?.handle ?? null, {

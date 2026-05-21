@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SearchHit } from "@/lib/search/store";
+import { stripMarkdown, truncate } from "@/lib/format";
 
 // Shared search-result rendering, used by /search and by /feed?q=…
 // Keeps both surfaces in sync: same dual-section layout, same excerpt
@@ -103,12 +104,23 @@ function HitCard({ hit }: { hit: SearchHit }) {
             ))}
           </div>
         )}
-        {hit.excerpt ? (
+        {hit.excerpt && (
           <p
             className="text-sm text-[var(--foreground)]"
             dangerouslySetInnerHTML={{ __html: highlightExcerpt(hit.excerpt) }}
           />
-        ) : (
+        )}
+        {hit.last_ai_message && (
+          <p
+            className={
+              "border-l-2 border-[var(--border)] pl-2 text-sm text-[var(--muted)] " +
+              (hit.excerpt ? "mt-2" : "")
+            }
+          >
+            {truncate(stripMarkdown(hit.last_ai_message), 220)}
+          </p>
+        )}
+        {!hit.excerpt && !hit.last_ai_message && (
           <p className="text-sm italic text-[var(--muted)]">(no preview)</p>
         )}
       </Link>

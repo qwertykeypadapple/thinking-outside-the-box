@@ -42,32 +42,57 @@ function secondsUntilUtcMidnight(): number {
   return Math.ceil((midnight.getTime() - now.getTime()) / 1000);
 }
 
-// Fire-and-forget tag extraction. Runs after the chat response is streamed.
-// In dev / long-lived server: completes fine. In serverless prod we'll move
-// this to a queue once we deploy — for now, intentional best-effort.
-async function tagInBackground(chatId: string): Promise<void> {
+// Tag extraction. Runs after the assistant stream finishes — the user has
+// already seen the full reply by then, so we await this before closing the
+// response. Guarantees that the next /c/[chatId] render (and any
+// findSimilarChats query from another visitor) sees up-to-date topic_tags.
+// Bounded by TAG_TIMEOUT_MS so a slow Sonnet call can't pin the response.
+const TAG_TIMEOUT_MS = 6000;
+async function runTagExtraction(chatId: string): Promise<void> {
   try {
     const messages = await getMessages(chatId);
-    const tags = await extractTags(messages);
+    const tags = await withTimeout(extractTags(messages), TAG_TIMEOUT_MS);
     if (tags.length > 0) await updateChatTags(chatId, tags);
-  } catch {
-    // Tag failures must never bubble — they're cosmetic.
+  } catch (err) {
+    // Tag failures used to be silently swallowed — that masked the
+    // root cause when matching stopped working. Capture for visibility
+    // but never throw: matching is allowed to degrade, the chat itself
+    // is not.
+    Sentry.captureException(err, { tags: { surface: "tag-extraction", chatId } });
   }
 }
 
-// Fire-and-forget embedding refresh — gated on VOYAGE_API_KEY being set.
-// Embeds the concatenated last 5 user messages so the vector reflects what
-// the user is currently exploring, not stale openings or model prose.
-async function embedInBackground(chatId: string): Promise<void> {
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      },
+    );
+  });
+}
+
+// Embedding refresh — gated on VOYAGE_API_KEY being set. Embeds the
+// concatenated last 5 user messages so the vector reflects what the user is
+// currently exploring, not stale openings or model prose. Errors captured
+// to Sentry so a quietly-broken embedding pipeline is visible.
+const EMBED_TIMEOUT_MS = 6000;
+async function runEmbedding(chatId: string): Promise<void> {
   const provider = getEmbeddingProvider();
   if (!provider) return;
   try {
     const text = await getUserMessageContext(chatId, 5);
     if (!text.trim()) return;
-    const vec = await provider.embed(text, { kind: "document" });
+    const vec = await withTimeout(provider.embed(text, { kind: "document" }), EMBED_TIMEOUT_MS);
     await updateChatEmbedding(chatId, vec);
-  } catch {
-    // Embedding failures must never bubble.
+  } catch (err) {
+    Sentry.captureException(err, { tags: { surface: "embedding", chatId } });
   }
 }
 
@@ -101,6 +126,9 @@ async function moderateInBackground(
 }
 
 export async function POST(req: NextRequest) {
+  // Wallclock for the chat_first_token_ms distribution. Stays local to this
+  // request — no shared state, so no purity concerns.
+  const requestStart = Date.now();
   const { handle } = await getOrCreateIdentity();
 
   // Bot gate: refuse the LLM call if the visitor hasn't passed Turnstile
@@ -133,6 +161,7 @@ export async function POST(req: NextRequest) {
   const userRow = await getUser(handle).catch(() => null);
   const decision = await checkAndIncrement(handle, userRow?.created_at ?? null).catch(() => null);
   if (decision && !decision.ok) {
+    Sentry.metrics.count("chat.rate_limited", 1, { attributes: { bucket: decision.bucket } });
     const mins = Math.ceil(decision.resetInSec / 60);
     return new Response(
       `Rate limit reached (${decision.limit}/${decision.bucket}). Try again in ~${mins} minute${mins === 1 ? "" : "s"}.`,
@@ -170,6 +199,7 @@ export async function POST(req: NextRequest) {
   } else {
     const created = await createChat(handle);
     chatId = created.id;
+    Sentry.metrics.count("chat.chat_started", 1, { attributes: { via: "first_message" } });
     void recordEvent("chat_started", handle, { chatId, via: "first_message" });
   }
 
@@ -182,6 +212,7 @@ export async function POST(req: NextRequest) {
   // before any token spend. The 400 body is user-facing.
   const effort = checkEffort(userText, { isFirstMessage });
   if (!effort.ok) {
+    Sentry.metrics.count("chat.message_blocked", 1, { attributes: { gate: "heuristic" } });
     return new Response(effort.reason, { status: 400 });
   }
 
@@ -190,8 +221,14 @@ export async function POST(req: NextRequest) {
   // Tuesday", etc. One Haiku call, ~500ms, soft-bypasses on classifier failure
   // (better to occasionally answer noise than to reject real messages). Disabled
   // by SIGNAL_GATE_DISABLED=1.
+  const signalStart = Date.now();
   const signal = await classifySignal(userText, { isFirstMessage });
+  Sentry.metrics.distribution("chat.signal_classifier_ms", Date.now() - signalStart, {
+    unit: "ms",
+    attributes: { verdict: signal ? (signal.meaningful ? "meaningful" : "blocked") : "bypassed" },
+  });
   if (signal && !signal.meaningful) {
+    Sentry.metrics.count("chat.message_blocked", 1, { attributes: { gate: "classifier" } });
     void recordEvent("message_blocked_low_signal", handle, { reason: signal.reason });
     return new Response(
       "That doesn't look like a question or statement I can help with. Try rephrasing.",
@@ -212,6 +249,7 @@ export async function POST(req: NextRequest) {
   // Moderation pass on the user's turn — runs in parallel with the LLM call
   // so it doesn't add latency to the assistant stream.
   void moderateInBackground(chatId, userMessageId, userRedacted, "user");
+  Sentry.metrics.count("chat.message_sent", 1);
   void recordEvent("message_sent", handle, { chatId, len: userText.length });
 
   // Reuse priorMessages from above + the just-inserted row, instead of a
@@ -263,12 +301,19 @@ export async function POST(req: NextRequest) {
       // Subscribe is fast (~50–150ms); start it in parallel with the LLM
       // call but don't block the first HTTP token on it.
       void subscribed;
+      let firstTokenLogged = false;
       try {
         const iter = provider.streamChat(
           [{ role: "system", content: SYSTEM_PROMPT }, ...history],
           { signal: req.signal },
         );
         for await (const delta of iter) {
+          if (!firstTokenLogged) {
+            Sentry.metrics.distribution("chat.first_token_ms", Date.now() - requestStart, {
+              unit: "ms",
+            });
+            firstTokenLogged = true;
+          }
           assistant += delta;
           controller.enqueue(encoder.encode(delta));
           // Broadcast to non-requesting viewers (channel { self: false } so
@@ -281,10 +326,14 @@ export async function POST(req: NextRequest) {
           const { text: assistantRedacted } = redact(assistant);
           await finalizeAssistantMessage(assistantMessageId, assistantRedacted);
           emit("done", { messageId: assistantMessageId, content: assistantRedacted });
-          // Tag, embed, moderate, and record spend in parallel. All four are
-          // best-effort: the user's request is already served by this point.
-          void tagInBackground(chatId);
-          void embedInBackground(chatId);
+          // Tag + embed need to land BEFORE the next render of this chat (so
+          // findSimilarChats sees current topic_tags / summary_embedding).
+          // The user has already seen the full reply via the stream, so
+          // awaiting these here only delays the connection close, not the
+          // visible text. Run in parallel; bounded by per-call timeouts.
+          await Promise.allSettled([runTagExtraction(chatId), runEmbedding(chatId)]);
+          // Moderation stays fire-and-forget — it stamps the row asynchronously
+          // and doesn't gate matching.
           void moderateInBackground(chatId, assistantMessageId, assistantRedacted, "assistant");
           // Token estimate is char-based (~4 chars/token). Close enough for a
           // $-gate that fires at $15/$25. Inputs = system prompt + full

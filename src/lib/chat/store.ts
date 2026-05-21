@@ -142,6 +142,34 @@ type ChatWithMessages = {
   }[];
 };
 
+// Fetch preview info (first user msg + last AI msg) for a set of chat ids.
+// Used by /search to give every result the same "what was said" preview
+// /feed already gets via listPublicChatsWithPreview. Returns a Map so the
+// caller can merge in O(1) per hit.
+export async function getChatsPreviewInfo(
+  chatIds: string[],
+): Promise<Map<string, { first_user_message: string | null; last_ai_message: string | null }>> {
+  const out = new Map<string, { first_user_message: string | null; last_ai_message: string | null }>();
+  if (chatIds.length === 0) return out;
+  const { data, error } = await getSupabaseAdmin()
+    .from("chats")
+    .select("id, messages(role, content_redacted, created_at, status)")
+    .in("id", chatIds);
+  if (error) throw new Error(`getChatsPreviewInfo: ${error.message}`);
+  for (const c of (data ?? []) as ChatWithMessages[]) {
+    const sorted = c.messages
+      .filter((m) => (m.status ?? "complete") === "complete")
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const firstUser = sorted.find((m) => m.role === "user");
+    const lastAi = [...sorted].reverse().find((m) => m.role === "assistant");
+    out.set(c.id, {
+      first_user_message: firstUser?.content_redacted ?? null,
+      last_ai_message: lastAi?.content_redacted ?? null,
+    });
+  }
+  return out;
+}
+
 export async function listPublicChatsWithPreview(limit = 50): Promise<PublicChatPreview[]> {
   const { data, error } = await getSupabaseAdmin()
     .from("chats")

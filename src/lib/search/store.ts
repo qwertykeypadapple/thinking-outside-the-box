@@ -6,7 +6,12 @@ export type SearchHit = {
   owner_handle: string;
   topic_tags: string[];
   last_active_at: string;
+  // Highlighted excerpt from ts_headline — only present on keyword hits.
   excerpt: string | null;
+  // The chat's latest AI reply, regardless of whether the hit was keyword
+  // or semantic. Gives semantic-only hits a real preview and matches the
+  // ChatCard treatment used on /feed.
+  last_ai_message: string | null;
   distance: number | null;
 };
 
@@ -30,6 +35,7 @@ export async function keywordSearch(query: string, limit = 20): Promise<SearchHi
     topic_tags: r.topic_tags ?? [],
     last_active_at: r.last_active_at,
     excerpt: r.hit_excerpt,
+    last_ai_message: null,
     distance: null,
   }));
 }
@@ -57,6 +63,7 @@ export async function semanticSearch(query: string, limit = 20): Promise<SearchH
     topic_tags: r.topic_tags ?? [],
     last_active_at: r.last_active_at,
     excerpt: null,
+    last_ai_message: null,
     distance: r.distance,
   }));
 }
