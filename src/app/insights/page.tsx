@@ -249,7 +249,7 @@ function EventRow({ event }: { event: EventRecord }) {
         {event.type}
       </span>
       {event.handle && (
-        <span className="shrink-0 text-[10px] text-[var(--foreground)]">{event.handle}</span>
+        <span className="user-name-shine shrink-0 text-[10px] text-[var(--foreground)]">{event.handle}</span>
       )}
       <span className="truncate text-[10px] text-[var(--muted)]">{propsStr}</span>
     </li>

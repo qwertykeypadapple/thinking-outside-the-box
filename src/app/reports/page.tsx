@@ -62,7 +62,7 @@ export default async function ReportsPage() {
                       open chat ↗
                     </Link>
                     {r.reporter_handle && (
-                      <span>by <span className="font-mono">{r.reporter_handle}</span></span>
+                      <span>by <span className="user-name-shine font-mono">{r.reporter_handle}</span></span>
                     )}
                   </span>
                   <span>{new Date(r.created_at).toLocaleString()}</span>

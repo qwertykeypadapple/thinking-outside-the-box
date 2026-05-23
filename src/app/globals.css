@@ -78,8 +78,20 @@ body {
   to { transform: translateX(140%); }
 }
 
+@keyframes user-name-shine {
+  0%, 100% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 8px 16px rgba(0, 122, 255, 0.18));
+  }
+  50% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 10px 22px rgba(50, 173, 230, 0.28));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .apple-page > header::after { animation: none; }
+  .user-name-shine { animation: none; }
 }
 
 /* iOS Safari zooms the viewport when an input is focused unless the input's
@@ -149,6 +161,37 @@ body {
   color: var(--accent-strong);
   -webkit-text-fill-color: currentColor;
   text-shadow: 0 10px 24px rgba(0, 122, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.user-name-shine {
+  background: linear-gradient(105deg, #004fc4 0%, #007aff 28%, #d8f2ff 48%, #32ade6 62%, #0057d9 100%);
+  background-size: 260% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: var(--accent-strong);
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  text-shadow: 0 0 14px rgba(0, 122, 255, 0.26), 0 8px 18px rgba(0, 72, 170, 0.18);
+  animation: user-name-shine 4.2s ease-in-out infinite;
+}
+
+a.user-name-shine {
+  text-decoration-color: rgba(0, 122, 255, 0.42);
+  text-underline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .user-name-shine {
+    background-image: linear-gradient(105deg, #80c7ff 0%, #0a84ff 30%, #f1fbff 50%, #5ac8fa 68%, #9fd8ff 100%);
+    text-shadow: 0 0 18px rgba(90, 200, 250, 0.34), 0 10px 26px rgba(10, 132, 255, 0.24);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-name-shine {
+    animation: none !important;
+    background-position: 50% 50%;
+  }
 }
 
 .apple-page header h1.truncate {

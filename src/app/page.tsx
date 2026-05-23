@@ -151,7 +151,7 @@ function Header({ handle, lastChatId }: { handle: string; lastChatId: string | n
           <span className="block text-[10px] uppercase tracking-wider text-[var(--muted)]">
             you are
           </span>
-          <span className="block font-mono text-sm">{handle}</span>
+          <span className="user-name-shine block font-mono text-sm">{handle}</span>
         </Link>
       </div>
     </header>
@@ -163,7 +163,7 @@ function WelcomeBanner({ handle }: { handle: string }) {
     <div className="mb-6 rounded-md border border-[var(--border)] bg-[var(--accent)]/5 p-3 text-sm">
       <p className="text-[var(--muted)]">
         Welcome! Your handle{" "}
-        <span className="font-mono text-[var(--foreground)]">{handle}</span> lives on
+        <span className="user-name-shine font-mono text-[var(--foreground)]">{handle}</span> lives on
         this device only — clear your cookies or switch devices and you get a fresh
         identity, by design. No account, no email, no password to remember.
       </p>
@@ -318,7 +318,7 @@ function EmptyTrendingState({ handle }: { handle: string }) {
         <span className="font-mono">Public</span> from the chat header.
       </p>
       <p className="text-xs text-[var(--muted)]">
-        You&apos;re <span className="font-mono">{handle}</span>. Anything you write
+        You&apos;re <span className="user-name-shine font-mono">{handle}</span>. Anything you write
         publicly shows up here for others exploring the same topic.
       </p>
     </div>

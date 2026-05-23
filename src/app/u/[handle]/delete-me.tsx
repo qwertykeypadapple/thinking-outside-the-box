@@ -61,7 +61,7 @@ export function DeleteMe({ currentHandle }: { currentHandle: string }) {
       </ul>
       <label className="mt-1 text-xs">
         Type your handle{" "}
-        <span className="font-mono text-[var(--foreground)]">{currentHandle}</span>{" "}
+        <span className="user-name-shine font-mono text-[var(--foreground)]">{currentHandle}</span>{" "}
         to enable the delete button:
       </label>
       <input

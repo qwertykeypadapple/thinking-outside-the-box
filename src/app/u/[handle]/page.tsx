@@ -51,7 +51,7 @@ export default async function ProfilePage({
         <div className="flex min-w-0 items-center gap-2">
           <BrandMark size={40} />
           <div className="min-w-0">
-            <h1 className="font-mono text-2xl font-semibold tracking-tight break-all">{summary.user.handle}</h1>
+            <h1 className="user-name-shine font-mono text-2xl font-semibold tracking-tight break-all">{summary.user.handle}</h1>
             <p className="text-xs text-[var(--muted)]">
               joined {relativeTime(summary.user.created_at)} · last seen {relativeTime(summary.user.last_seen_at)}
               <br className="sm:hidden" />

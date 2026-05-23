@@ -80,7 +80,7 @@ function HitCard({ hit }: { hit: SearchHit }) {
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 pt-3 text-xs text-[var(--muted)]">
         <Link
           href={`/u/${hit.owner_handle}`}
-          className="font-mono text-[var(--foreground)] hover:underline"
+          className="user-name-shine font-mono text-[var(--foreground)] hover:underline"
         >
           {hit.owner_handle}
         </Link>
