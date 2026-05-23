@@ -9,7 +9,7 @@ export const dynamic = "force-static";
 // false — fine, that's the normal "new visitor" path on the next click.
 export default function DeletedPage() {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pt-12 pb-4">
+    <div className="apple-page mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pt-12 pb-4">
       <div className="mb-6">
         <BrandMark size={40} />
       </div>

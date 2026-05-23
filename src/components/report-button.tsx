@@ -12,7 +12,7 @@ export function ReportButton({ chatId }: { chatId: string }) {
 
   if (done) {
     return (
-      <span className="text-xs text-[var(--muted)]">Reported. We'll review it.</span>
+      <span className="text-xs text-[var(--muted)]">Reported. We&apos;ll review it.</span>
     );
   }
 

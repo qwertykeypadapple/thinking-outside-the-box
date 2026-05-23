@@ -25,12 +25,7 @@ export default async function InsightsPage() {
   const identity = await getIdentity();
   if (!admin || identity?.handle !== admin) notFound();
 
-  const now = Date.now();
-  const since = {
-    "24h": new Date(now - 24 * 60 * 60 * 1000).toISOString(),
-    "7d": new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    "30d": new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
-  };
+  const since = rollingWindows();
 
   // Pull everything in parallel — these are independent reads.
   const [
@@ -75,7 +70,7 @@ export default async function InsightsPage() {
   const spendPct = hardLimit > 0 ? (spendUsd / hardLimit) * 100 : 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
+    <div className="apple-page mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex min-w-0 items-center gap-2">
           <BrandMark size={40} />
@@ -259,4 +254,13 @@ function EventRow({ event }: { event: EventRecord }) {
       <span className="truncate text-[10px] text-[var(--muted)]">{propsStr}</span>
     </li>
   );
+}
+
+function rollingWindows() {
+  const now = Date.now();
+  return {
+    "24h": new Date(now - 24 * 60 * 60 * 1000).toISOString(),
+    "7d": new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    "30d": new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  };
 }

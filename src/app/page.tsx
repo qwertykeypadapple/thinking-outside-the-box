@@ -52,7 +52,7 @@ export default async function HomePage({
 
   // Fetch in parallel — most-recent chat (for the "continue last" CTA) is
   // always fetched; per-tab data is whichever tab is active.
-  const sinceWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const sinceWeek = daysAgoIso(7);
   const [myRecent, tagsWeek, tabChats] = await Promise.all([
     listChats(identity.handle, 1),
     topTags(sinceWeek, 12),
@@ -64,7 +64,7 @@ export default async function HomePage({
   const lastChatId = myRecent[0]?.id ?? null;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-8">
+    <div className="apple-page mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-8">
       <Header handle={identity.handle} lastChatId={lastChatId} />
 
       {isNew && <WelcomeBanner handle={identity.handle} />}
@@ -94,6 +94,10 @@ async function fetchTabChats(
   return listPublicChatsWithPreview(50);
 }
 
+function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
 function Header({ handle, lastChatId }: { handle: string; lastChatId: string | null }) {
   return (
     <header className="mb-6 flex flex-col gap-3 border-b border-[var(--border)] pb-4 sm:flex-row sm:items-end sm:justify-between">
@@ -108,7 +112,7 @@ function Header({ handle, lastChatId }: { handle: string; lastChatId: string | n
           width={72}
           height={72}
           priority
-          className="shrink-0"
+          className="brand-mark-image shrink-0"
         />
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-semibold tracking-tight">

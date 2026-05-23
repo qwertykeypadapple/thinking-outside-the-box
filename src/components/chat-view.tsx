@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+  type SetStateAction,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ChatMessage } from "@/lib/llm";
@@ -39,7 +46,13 @@ export function ChatView({
   showHandleNotice: initialShowNotice = false,
 }: Props) {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const latestInitialMessagesRef = useRef(initialMessages);
+  const [messageState, setMessageState] = useState(() => ({
+    source: initialMessages,
+    local: initialMessages,
+  }));
+  const messages =
+    messageState.source === initialMessages ? messageState.local : initialMessages;
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const streamingRef = useRef(false);
@@ -52,11 +65,18 @@ export function ChatView({
   const [, startTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Keep messages in sync when the server prop changes (router.refresh from
-  // realtime + post-stream finalize updates initialMessages).
   useEffect(() => {
-    setMessages(initialMessages);
+    latestInitialMessagesRef.current = initialMessages;
   }, [initialMessages]);
+
+  function setMessages(update: SetStateAction<ChatMessage[]>) {
+    setMessageState((prev) => {
+      const source = latestInitialMessagesRef.current;
+      const base = prev.source === source ? prev.local : source;
+      const local = typeof update === "function" ? update(base) : update;
+      return { source, local };
+    });
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -207,7 +227,7 @@ export function ChatView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
+    <div className="apple-page mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       {/* Anyone viewing this chat may also be typing into it — keep their
           SimilarStrip live whether they're the original owner or a continuer. */}
       <RealtimeMatchTrigger />
@@ -296,14 +316,14 @@ export function ChatView({
       {!isOwner && (
         <div className="mb-4 rounded-md border border-[var(--border)] bg-black/3 p-3 text-xs text-[var(--muted)] dark:bg-white/5">
           <p>
-            You're viewing{" "}
+            You&apos;re viewing{" "}
             <Link
               href={`/u/${ownerHandle}`}
               className="font-mono text-[var(--foreground)] hover:underline"
             >
               {ownerHandle}
             </Link>
-            's chat. Visibility: <span className="font-mono">{visibility}</span>.
+            &apos;s chat. Visibility: <span className="font-mono">{visibility}</span>.
           </p>
         </div>
       )}

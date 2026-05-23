@@ -26,7 +26,7 @@ export default function SponsorsPage() {
   const ocReady = OPEN_COLLECTIVE_URL.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
+    <div className="apple-page mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex min-w-0 items-center gap-2">
           <BrandMark size={40} />

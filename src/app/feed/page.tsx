@@ -68,7 +68,7 @@ export default async function FeedPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
+    <div className="apple-page mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-4">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex min-w-0 items-center gap-2">
           <BrandMark size={40} />
@@ -199,7 +199,7 @@ function EmptyState({ tab }: { tab: Tab }) {
         </>
       ) : (
         <>
-          You aren't following anyone yet. Open a profile from{" "}
+          You aren&apos;t following anyone yet. Open a profile from{" "}
           <Link href="/feed" className="underline">
             Trending
           </Link>{" "}
@@ -209,4 +209,3 @@ function EmptyState({ tab }: { tab: Tab }) {
     </div>
   );
 }
-

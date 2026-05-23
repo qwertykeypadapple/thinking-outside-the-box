@@ -1,11 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf7;
-  --foreground: #18181b;
-  --muted: #71717a;
-  --border: #e4e4e7;
-  --accent: #5b21b6;
+  --background: #ffffff;
+  --foreground: #102033;
+  --muted: #61758e;
+  --border: rgba(0, 122, 255, 0.18);
+  --accent: #007aff;
+  --accent-strong: #0057d9;
+  --accent-cyan: #32ade6;
+  --accent-pink: #ff2d55;
+  --accent-orange: #ff9500;
+  --accent-green: #34c759;
+  --accent-purple: #af52de;
+  --glass: rgba(245, 250, 255, 0.90);
+  --glass-strong: rgba(235, 246, 255, 0.96);
+  --glass-border: transparent;
+  --glass-shadow: none;
+  --box-text: #102033;
+  --box-muted: rgba(72, 91, 115, 0.84);
+  --box-faint: rgba(0, 122, 255, 0.08);
+  --rainbow: linear-gradient(100deg, #0057d9 0%, #007aff 52%, #32ade6 100%);
+  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-apple-mono: "SF Mono", "SFMono-Regular", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {
@@ -14,17 +30,22 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-apple);
+  --font-mono: var(--font-apple-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #a1a1aa;
-    --border: #27272a;
-    --accent: #a78bfa;
+    --background: #07080c;
+    --foreground: #f7f8ff;
+    --muted: #a9b0bf;
+    --border: rgba(255, 255, 255, 0.12);
+    --accent: #0a84ff;
+    --accent-strong: #409cff;
+    --glass: rgba(13, 23, 42, 0.62);
+    --glass-strong: rgba(19, 33, 58, 0.78);
+    --glass-border: rgba(112, 173, 255, 0.24);
+    --glass-shadow: 0 24px 80px rgba(0, 0, 0, 0.38), 0 1px 0 rgba(152, 202, 255, 0.13) inset;
   }
 }
 
@@ -48,73 +69,17 @@ body {
   color: var(--foreground);
   background: transparent;
   position: relative;
+  overflow-x: hidden;
+  font-feature-settings: "cv01", "cv03", "cv04", "ss03";
 }
 
-/* Soft animated gradient blobs anchored to each corner of the viewport, sitting
-   behind all content. All four corners are purple — different shades, from
-   deep violet through lavender — and the hue gently breathes ±15° so it
-   stays in the purple family instead of cycling through the full spectrum.
-   transform: translateZ(0) promotes the layer to its own compositing surface
-   so the animated filter doesn't repaint the page content on each frame
-   (matters most on iOS Safari, where filter on a full-viewport element is
-   expensive). */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  transform: translateZ(0);
-  background-image:
-    /* top-left: deep purple (the brand accent) */
-    radial-gradient(60vmax 50vmax at 0% 0%, rgba(91, 33, 182, 0.22), transparent 60%),
-    /* top-right: violet */
-    radial-gradient(55vmax 45vmax at 100% 0%, rgba(124, 58, 237, 0.26), transparent 60%),
-    /* bottom-right: lavender */
-    radial-gradient(60vmax 55vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 60%),
-    /* bottom-left: pale lavender */
-    radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.40), transparent 60%);
-  animation: corner-hue 30s ease-in-out infinite alternate;
-  will-change: filter;
-}
-
-/* IMPORTANT — the four blocks below MUST stay in this source order:
-   1. dark-desktop, 2. light-mobile, 3. dark-mobile. All three have equal
-   specificity, so source order is what makes dark-mobile actually win on
-   a dark-mode phone (otherwise the broader `prefers-color-scheme: dark`
-   rule cascades over it). */
-
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background-image:
-      /* top-left: deep violet, brighter so it reads on near-black */
-      radial-gradient(60vmax 50vmax at 0% 0%, rgba(124, 58, 237, 0.34), transparent 60%),
-      /* top-right: violet */
-      radial-gradient(55vmax 45vmax at 100% 0%, rgba(139, 92, 246, 0.30), transparent 60%),
-      /* bottom-right: lavender */
-      radial-gradient(60vmax 55vmax at 100% 100%, rgba(167, 139, 250, 0.32), transparent 60%),
-      /* bottom-left: pale lavender */
-      radial-gradient(55vmax 50vmax at 0% 100%, rgba(196, 181, 253, 0.26), transparent 60%);
-  }
-}
-
-/* Phone-sized screens: hide the gradient layer entirely. On a tall iPhone
-   the corners crowded the chat text, and animating a fixed full-viewport
-   filter on mobile Safari is GPU-expensive anyway. Desktop keeps the
-   gradient; html's solid var(--background) shows through on mobile. */
-@media (max-width: 640px) {
-  body::before {
-    display: none;
-  }
-}
-
-@keyframes corner-hue {
-  from { filter: hue-rotate(-15deg); }
-  to   { filter: hue-rotate(15deg); }
+@keyframes glass-sheen {
+  from { transform: translateX(-140%); }
+  to { transform: translateX(140%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  .apple-page > header::after { animation: none; }
 }
 
 /* iOS Safari zooms the viewport when an input is focused unless the input's
@@ -127,4 +92,186 @@ body::before {
   select {
     font-size: 16px;
   }
+}
+
+.apple-page {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+
+.apple-page :is(.tracking-tight, .tracking-wider) {
+  letter-spacing: 0 !important;
+}
+
+.apple-page > header {
+  position: relative;
+  border-color: transparent !important;
+  background: transparent;
+  box-shadow: none;
+  color: var(--box-text);
+  text-shadow: 0 12px 28px rgba(0, 72, 170, 0.18), 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.apple-page > header::after {
+  display: none;
+}
+
+.apple-page > header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.apple-page > header,
+.apple-page > section {
+  color: var(--box-text);
+}
+
+.apple-page > section {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  text-shadow: 0 10px 24px rgba(0, 72, 170, 0.13), 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-page > header {
+    background:
+      linear-gradient(135deg, rgba(20, 34, 58, 0.78), rgba(8, 14, 27, 0.54)),
+      linear-gradient(90deg, rgba(10, 132, 255, 0.22), rgba(50, 173, 230, 0.14), rgba(175, 82, 222, 0.10));
+  }
+}
+
+.apple-page header h1,
+.rainbow-text {
+  background: none;
+  color: var(--accent-strong);
+  -webkit-text-fill-color: currentColor;
+  text-shadow: 0 10px 24px rgba(0, 122, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.apple-page header h1.truncate {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+.brand-mark,
+.brand-mark-image {
+  border-radius: 8px;
+}
+
+.brand-mark img {
+  filter: hue-rotate(-42deg) saturate(1.45) brightness(1.04);
+}
+
+.brand-mark-image {
+  filter:
+    hue-rotate(-42deg)
+    saturate(1.45)
+    brightness(1.04)
+    drop-shadow(0 14px 24px rgba(0, 122, 255, 0.18));
+}
+
+.brand-mark {
+  display: inline-flex;
+  padding: 0.32rem;
+  background: transparent;
+  border: 0;
+  filter: drop-shadow(0 14px 24px rgba(0, 122, 255, 0.18));
+  box-shadow: none;
+}
+
+.apple-page .border {
+  border-color: transparent !important;
+  background: transparent;
+  color: var(--box-text);
+  box-shadow: none;
+  text-shadow: 0 10px 24px rgba(0, 72, 170, 0.12), 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.apple-page :is(header, section, .border) [class*="text-[var(--muted)]"] {
+  color: var(--box-muted) !important;
+}
+
+.apple-page :is(header, section, .border) [class*="text-[var(--foreground)]"] {
+  color: var(--box-text) !important;
+}
+
+.apple-page :is(header, section, .border) :is([class*="bg-black/"], [class*="dark:bg-white/"]) {
+  background-color: transparent !important;
+  text-shadow: 0 8px 18px rgba(0, 72, 170, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-page .border {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+}
+
+.apple-page .border-dashed {
+  background: transparent;
+  border-color: transparent !important;
+}
+
+.apple-page :is(.rounded-md, .rounded-lg) {
+  border-radius: 8px !important;
+}
+
+.apple-page :is(a, button, input, textarea, select, [role="button"]) {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.apple-page :is(a, button, [role="button"]):not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.apple-page :is(input, textarea, select) {
+  border-color: rgba(0, 122, 255, 0.20) !important;
+  background: rgba(255, 255, 255, 0.70) !important;
+  color: var(--box-text);
+  box-shadow: 0 14px 30px rgba(0, 88, 190, 0.08), 0 1px 0 rgba(255, 255, 255, 0.90) inset;
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+}
+
+.apple-page :is(input, textarea, select)::placeholder {
+  color: var(--box-muted);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-page :is(input, textarea, select) {
+    background: rgba(12, 15, 24, 0.50) !important;
+  }
+}
+
+.apple-page :is(input, textarea, select):focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.28) inset;
+}
+
+.apple-page button[class*="bg-"],
+.apple-page a[class*="bg-"] {
+  box-shadow: 0 12px 28px rgba(0, 122, 255, 0.24);
+}
+
+.apple-page :is(button, a)[class~="bg-[var(--accent)]"] {
+  background: linear-gradient(100deg, #0057d9 0%, #007aff 52%, #32ade6 100%) !important;
+  background-size: 170% 170% !important;
+  color: white !important;
+  box-shadow: 0 16px 34px rgba(0, 122, 255, 0.28);
+}
+
+.apple-page :is(button, a)[class*="text-[var(--accent)]"] {
+  color: var(--accent-strong);
 }

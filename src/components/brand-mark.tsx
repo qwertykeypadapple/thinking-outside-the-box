@@ -13,7 +13,7 @@ export function BrandMark({ size = 40 }: { size?: number }) {
   return (
     <Link
       href="/"
-      className="shrink-0"
+      className="brand-mark shrink-0"
       aria-label="Thinking Outside the Box — home"
       title="Home"
     >
